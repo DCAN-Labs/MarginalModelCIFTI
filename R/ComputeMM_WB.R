@@ -1,5 +1,5 @@
 #' ComputeMM_WB -- calculate the maximum cluster extent from a wild bootstrap
-#' 
+#'
 #' This function wraps many of the other functions to perform cluster detection analysis using
 #' the wild bootstrap.
 #' @param cifti_map surface array or nifti containing the scalar values -- just used to determine the number of participants
@@ -13,11 +13,12 @@
 #' @param structtype A character string denoting whether the map is volumetric ('volume') or surface-based
 #' @param matlab_path A character string denoting the path to the matlab compiler. Please use v91.
 #' @param surf_command A character string denoting the path to the SurfConnectivity command.
+#' @param correctiontype A character string denoting cluster ('cluster') or point ('point') comparisons
 #' @keywords wild bootstrap
 #' @export
-#' @examples 
+#' @examples
 #' max_cc <- ComputeMM_WB(cifti_map,zscore_map,resid_map,fit_map,type,external_df,
-#' notation,family_dist,structtype,thresh,structfile,matlab_path,surf_command)
+#' notation,family_dist,structtype,thresh,structfile,matlab_path,surf_command,correctiontype)
 ComputeMM_WB <- function(cifti_map,
                          zscore_map,
                          resid_map,
@@ -30,7 +31,8 @@ ComputeMM_WB <- function(cifti_map,
                          thresh,
                          structfile,
                          matlab_path,
-                         surf_command) {
+                         surf_command,
+                         correctiontype) {
   library("purrr")
   library("cifti")
   library("gifti")
@@ -59,11 +61,16 @@ ComputeMM_WB <- function(cifti_map,
   MM_bootmap <- map(cifti_bootmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist)
   zscore_bootmap <- map(MM_bootmap,ComputeZscores)
   thresh_bootmap <- zscore_bootmap > thresh
-  if (structtype=='volume'){
-    cc <- GetVolAreas(thresh_bootmap)
+  if (correctiontype=='point') {
+    return(max(zscore_bootmap))
   }
-  else{
-    cc <- GetSurfAreas(thresh_bootmap,structfile,matlab_path,surf_command)
-  }
-  return(max(cc))
+  else if (correctiontype=='cluster'){
+    if (structtype=='volume'){
+      cc <- GetVolAreas(thresh_bootmap)
+      }
+    else{
+      cc <- GetSurfAreas(thresh_bootmap,structfile,matlab_path,surf_command)
+      }
+    return(max(cc))
+    }
 }

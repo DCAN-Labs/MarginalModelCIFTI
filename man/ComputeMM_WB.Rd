@@ -6,7 +6,7 @@
 \usage{
 ComputeMM_WB(cifti_map, zscore_map, resid_map, fit_map, type, external_df,
   notation, family_dist, structtype, thresh, structfile, matlab_path,
-  surf_command)
+  surf_command, correctiontype)
 }
 \arguments{
 \item{cifti_map}{surface array or nifti containing the scalar values -- just used to determine the number of participants}
@@ -30,6 +30,8 @@ ComputeMM_WB(cifti_map, zscore_map, resid_map, fit_map, type, external_df,
 \item{matlab_path}{A character string denoting the path to the matlab compiler. Please use v91.}
 
 \item{surf_command}{A character string denoting the path to the SurfConnectivity command.}
+
+\item{correctiontype}{A character string denoting cluster ('cluster') or point ('point') comparisons}
 }
 \description{
 This function wraps many of the other functions to perform cluster detection analysis using
@@ -37,7 +39,7 @@ the wild bootstrap.
 }
 \examples{
 max_cc <- ComputeMM_WB(cifti_map,zscore_map,resid_map,fit_map,type,external_df,
-notation,family_dist,structtype,thresh,structfile,matlab_path,surf_command)
+notation,family_dist,structtype,thresh,structfile,matlab_path,surf_command,correctiontype)
 }
 \keyword{bootstrap}
 \keyword{wild}
