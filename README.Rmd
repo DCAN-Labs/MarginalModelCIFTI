@@ -16,11 +16,14 @@ knitr::opts_chunk$set(
 
 # MarginalModelCifti
 
-The goal of MarginalModelCifti is to ...
+The goal of MarginalModelCifti is to perform marginal models on CIFTI processed 
+datasets. The package contains a single main function that runs multiple
+subfunctions. Advanced users can use the subfunctions to construct their own
+analytic pipeline. However, this is not recommend for beginning users.
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+This is a basic example for how to use MarginalModelCifti:
 
 ```{r example}
 ## basic example code
