@@ -44,7 +44,7 @@ ConstructMarginalModel <- function(external_df,
     cifti_map <- cifti_alldata
   }
   else{
-    cifti_alldata <- transpose(data.frame((lapply(as.character(ciftilist$file),PrepCIFTI))))
+    cifti_alldata <- transpose(data.frame((lapply(as.character(ciftilist$file),PrepSurfMetric))))
     cifti_index <- 1:length(cifti_alldata)
     cifti_scalarmap <- map(cifti_index,ReframeCIFTIdata,cifti_rawmeas=cifti_alldata)
   }
