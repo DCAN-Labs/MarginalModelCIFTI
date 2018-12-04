@@ -41,7 +41,7 @@ ConstructMarginalModel <- function(external_df,
   ciftilist <- read.csv(concfile,header=FALSE,col.names="file")
   if (structtype == 'volume'){
     cifti_alldata <- data.frame((lapply(as.character(ciftilist$file),PrepVolMetric)))
-    cifti_map <- cifti_alldata
+    cifti_scalarmap <- cifti_alldata
   }
   else{
     cifti_alldata <- transpose(data.frame((lapply(as.character(ciftilist$file),PrepSurfMetric))))
@@ -54,7 +54,7 @@ ConstructMarginalModel <- function(external_df,
   if (is.character(wave)) {
     wave <- read.csv(wave,header=TRUE)
   }
-  cifti_map <- map(cifti_scalarmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor)
+  cifti_map <- map(cifti_scalarmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,waves=wave)
   zscore_map <- map(cifti_map,ComputeZscores)
   resid_map <- map(cifti_map,ComputeResiduals)
   fit_map <- map(cifti_map,ComputeFits)
@@ -79,8 +79,10 @@ ConstructMarginalModel <- function(external_df,
                                           structfile,
                                           matlab_path,
                                           surf_command,
+                                          corstr,
+                                          wave,
                                           zcor,
-                                          corstr))
+                                          sigtype))
     pval_map <- map(observed_cc,CalculatePvalue,WB_cc=WB_cc,nboot=nboot,sigtype=sigtype)
   }
   else{

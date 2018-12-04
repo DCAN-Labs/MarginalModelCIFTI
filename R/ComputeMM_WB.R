@@ -32,6 +32,9 @@ ComputeMM_WB <- function(cifti_map,
                          structfile,
                          matlab_path,
                          surf_command,
+                         corstr,
+                         wave,
+                         zcor,
                          correctiontype) {
   library("purrr")
   library("cifti")
@@ -58,7 +61,7 @@ ComputeMM_WB <- function(cifti_map,
     sample_val = bootstrap_mult
   )
   cifti_bootmap <- pmap(df,ApplyWB_toData)
-  MM_bootmap <- map(cifti_bootmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist)
+  MM_bootmap <- map(cifti_bootmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,waves=wave)
   zscore_bootmap <- map(MM_bootmap,ComputeZscores)
   thresh_bootmap <- zscore_bootmap > thresh
   if (correctiontype=='point') {
