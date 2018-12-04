@@ -14,7 +14,7 @@
 ComputeMM <- function(cifti_meas,external_df,notation,family_dist,corstr,zcor,waves,subid) {
   library("geepack")
   data_to_fit <-  cbind(cifti_meas,external_df)
-  geeglm_obj <- geeglm(notation, id=subid, family=family_dist,
+  geeglm_obj <- geeglm(notation, id=external_df[[subid]], family=family_dist,
                        corstr=corstr, data=data_to_fit, waves=wave,zcor=zcor)
   return(geeglm_obj)
 }
