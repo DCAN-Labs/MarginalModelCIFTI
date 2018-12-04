@@ -49,10 +49,10 @@ ConstructMarginalModel <- function(external_df,
     cifti_scalarmap <- map(cifti_index,ReframeCIFTIdata,cifti_rawmeas=cifti_alldata)
   }
   if (is.character(external_df)) {
-    external_df <- read_csv(external_df,header=TRUE)
+    external_df <- read.csv(external_df,header=TRUE)
   }
   if (is.character(wave)) {
-    wave <- read_csv(wave,header=TRUE)
+    wave <- read.csv(wave,header=TRUE)
   }
   cifti_map <- map(cifti_scalarmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor)
   zscore_map <- map(cifti_map,ComputeZscores)
