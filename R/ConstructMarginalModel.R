@@ -37,7 +37,8 @@ ConstructMarginalModel <- function(external_df,
                                    z_thresh,
                                    nboot,
                                    p_thresh,
-                                   sigtype){
+                                   sigtype,
+                                   id='subid'){
   ciftilist <- read.csv(concfile,header=FALSE,col.names="file")
   if (structtype == 'volume'){
     cifti_alldata <- data.frame((lapply(as.character(ciftilist$file),PrepVolMetric)))
@@ -54,7 +55,7 @@ ConstructMarginalModel <- function(external_df,
   if (is.character(wave)) {
     wave <- read.csv(wave,header=TRUE)
   }
-  cifti_map <- map(cifti_scalarmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,waves=wave)
+  cifti_map <- map(cifti_scalarmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,waves=wave,id=id)
   zscore_map <- map(cifti_map,ComputeZscores)
   resid_map <- map(cifti_map,ComputeResiduals)
   fit_map <- map(cifti_map,ComputeFits)
@@ -82,7 +83,8 @@ ConstructMarginalModel <- function(external_df,
                                           corstr,
                                           wave,
                                           zcor,
-                                          sigtype))
+                                          correction_type = sigtype,
+                                          id))
     pval_map <- map(observed_cc,CalculatePvalue,WB_cc=WB_cc,nboot=nboot,sigtype=sigtype)
   }
   else{

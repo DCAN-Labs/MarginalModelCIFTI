@@ -35,7 +35,8 @@ ComputeMM_WB <- function(cifti_map,
                          corstr,
                          wave,
                          zcor,
-                         correctiontype) {
+                         correctiontype,
+                         id) {
   library("purrr")
   library("cifti")
   library("gifti")
