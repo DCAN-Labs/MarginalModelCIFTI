@@ -55,7 +55,7 @@ ConstructMarginalModel <- function(external_df,
   if (is.character(wave)) {
     wave <- read.csv(wave,header=TRUE)
   }
-  cifti_map <- map(cifti_scalarmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,waves=wave,id_subjects=id_subjects)
+  cifti_map <- map(cifti_scalarmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,wave=wave,id_subjects=id_subjects)
   zscore_map <- map(cifti_map,ComputeZscores)
   resid_map <- map(cifti_map,ComputeResiduals)
   fit_map <- map(cifti_map,ComputeFits)

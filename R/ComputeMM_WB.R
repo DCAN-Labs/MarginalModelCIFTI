@@ -62,7 +62,7 @@ ComputeMM_WB <- function(cifti_map,
     sample_val = bootstrap_mult
   )
   cifti_bootmap <- pmap(df,ApplyWB_toData)
-  MM_bootmap <- map(cifti_bootmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,waves=wave,id_subjects=id_subjects)
+  MM_bootmap <- map(cifti_bootmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,wave=wave,id_subjects=id_subjects)
   zscore_bootmap <- map(MM_bootmap,ComputeZscores)
   thresh_bootmap <- zscore_bootmap > thresh
   if (correctiontype=='point') {
