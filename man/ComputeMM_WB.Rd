@@ -4,15 +4,11 @@
 \alias{ComputeMM_WB}
 \title{ComputeMM_WB -- calculate the maximum cluster extent from a wild bootstrap}
 \usage{
-ComputeMM_WB(cifti_map, zscore_map, resid_map, fit_map, type, external_df,
-  notation, family_dist, structtype, thresh, structfile, matlab_path,
-  surf_command, corstr, wave, zcor, correctiontype, id_subjects)
+ComputeMM_WB(resid_map, fit_map, type, external_df, notation, family_dist,
+  structtype, thresh, structfile, matlab_path, surf_command, corstr, wave,
+  zcor, correctiontype, id_subjects)
 }
 \arguments{
-\item{cifti_map}{surface array or nifti containing the scalar values -- just used to determine the number of participants}
-
-\item{zscore_map}{The z-scored map from the geeglm analysis}
-
 \item{resid_map}{The residual map from the geeglm analysis}
 
 \item{fit_map}{The fitted values map from the geeglm analysis}
@@ -32,6 +28,10 @@ ComputeMM_WB(cifti_map, zscore_map, resid_map, fit_map, type, external_df,
 \item{surf_command}{A character string denoting the path to the SurfConnectivity command.}
 
 \item{correctiontype}{A character string denoting cluster ('cluster') or point ('point') comparisons}
+
+\item{cifti_map}{surface array or nifti containing the scalar values -- just used to determine the number of participants}
+
+\item{zscore_map}{The z-scored map from the geeglm analysis}
 }
 \description{
 This function wraps many of the other functions to perform cluster detection analysis using
