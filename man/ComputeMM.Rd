@@ -4,7 +4,8 @@
 \alias{ComputeMM}
 \title{ComputeMM -- compute the marginal model at a single vertex/voxel}
 \usage{
-ComputeMM(cifti_meas, external_df, notation, family_dist)
+ComputeMM(cifti_meas, external_df, notation, family_dist, corstr,
+  zcor = NULL, wave = NULL, id_subjects)
 }
 \arguments{
 \item{cifti_meas}{An array of N numeric measures, where N is the number of subjects}

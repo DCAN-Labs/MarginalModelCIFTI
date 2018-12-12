@@ -5,8 +5,9 @@
 \title{ConstructMarginalModel -- the main function that will estimate the significance of the marginal model fitted to a CIFTI dscalar dataset}
 \usage{
 ConstructMarginalModel(external_df, concfile, structtype, structfile,
-  matlab_path, surf_command, wave, notation, zcor, corstr, family_dist,
-  dist_type, z_thresh, nboot, p_thresh, sigtype)
+  matlab_path, surf_command, wave = NULL, notation, zcor = NULL,
+  corstr, family_dist, dist_type, z_thresh, nboot, p_thresh, sigtype,
+  id_subjects = "subid")
 }
 \arguments{
 \item{external_df}{A data frame comprising non-brain measures to model. Can be specified as a string to a csv file with appropriate headers.}
