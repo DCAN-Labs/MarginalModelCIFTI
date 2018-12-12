@@ -19,9 +19,7 @@
 #' @examples
 #' max_cc <- ComputeMM_WB(cifti_map,zscore_map,resid_map,fit_map,type,external_df,
 #' notation,family_dist,structtype,thresh,structfile,matlab_path,surf_command,correctiontype)
-ComputeMM_WB <- function(cifti_map,
-                         zscore_map,
-                         resid_map,
+ComputeMM_WB <- function(resid_map,
                          fit_map,
                          type,
                          external_df,
@@ -44,7 +42,7 @@ ComputeMM_WB <- function(cifti_map,
   library("Matrix")
   library("oro.nifti")
   library("mmand")
-  ncomps <- nrow(cifti_map)
+  ncomps <- length(unlist(resid_map[1]))
   if (type=='radenbacher'){
     bootstrap_mult <- sample(c(-1,1),ncomps,replace=TRUE)
   } else if (type=='mammen'){
@@ -62,19 +60,31 @@ ComputeMM_WB <- function(cifti_map,
     sample_val = bootstrap_mult
   )
   cifti_bootmap <- pmap(df,ApplyWB_toData)
+  data_to_fit <- external_df 
   MM_bootmap <- map(cifti_bootmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,wave=wave,id_subjects=id_subjects)
   zscore_bootmap <- map(MM_bootmap,ComputeZscores)
-  thresh_bootmap <- zscore_bootmap > thresh
+  thresh_bootmap <- map(zscore_bootmap,ThreshMap,zthresh=thresh)
   if (correctiontype=='point') {
     return(max(zscore_bootmap))
   }
   else if (correctiontype=='cluster'){
-    if (structtype=='volume'){
-      cc <- GetVolAreas(thresh_bootmap)
+    varlist <- all.vars(notation)
+    nmeas <- length(varlist)
+    all_cc = list(1:nmeas)
+    for (curr_meas in 1:nmeas){
+      thresh_bootarray = unlist(thresh_bootmap)
+      mask_bootvector = 1:nmeas == curr_meas
+      thresh_bootarray <- thresh_bootarray[mask_bootvector]
+      thresh_bootarray <- as.numeric(thresh_bootarray)
+      thresh_bootarray[is.na(thresh_bootarray)] <-  0
+      if (structtype=='volume'){
+        cc <- GetVolAreas(thresh_bootarray)
+        }
+      else{
+        cc <- GetSurfAreas(thresh_bootarray,structfile,matlab_path,surf_command)
       }
-    else{
-      cc <- GetSurfAreas(thresh_bootmap,structfile,matlab_path,surf_command)
-      }
-    return(max(cc))
+      all_cc[nmeas] = max(cc)
     }
+      return(all_cc)
+  }
 }

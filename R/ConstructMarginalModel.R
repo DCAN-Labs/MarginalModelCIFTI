@@ -39,6 +39,13 @@ ConstructMarginalModel <- function(external_df,
                                    p_thresh,
                                    sigtype,
                                    id_subjects='subid'){
+  library("purrr")
+  library("cifti")
+  library("gifti")
+  library("geepack")
+  library("Matrix")
+  library("oro.nifti")
+  library("mmand")
   ciftilist <- read.csv(concfile,header=FALSE,col.names="file")
   if (structtype == 'volume'){
     cifti_alldata <- data.frame((lapply(as.character(ciftilist$file),PrepVolMetric)))
@@ -60,36 +67,48 @@ ConstructMarginalModel <- function(external_df,
   zscore_map <- map(cifti_map,ComputeZscores)
   resid_map <- map(cifti_map,ComputeResiduals)
   fit_map <- map(cifti_map,ComputeFits)
-  thresh_map <- zscore_map > z_thresh
+  thresh_map <- map(zscore_map,ThreshMap,zthresh=z_thresh)
   if (sigtype == 'cluster'){
-    if (structtype == 'volume'){
-      observed_cc <- GetVolAreas(thresh_map)
+    varlist <- all.vars(notation)
+    nmeas <- length(varlist)
+    all_cc = matrix(data=NA,nrow=length(thresh_map),ncol=nmeas)
+    for (curr_meas in 1:nmeas){
+      thresh_array = unlist(thresh_map)
+      mask_vector = 1:nmeas == curr_meas
+      thresh_array <- thresh_array[mask_vector]
+      thresh_array <- as.numeric(thresh_array)
+      thresh_array[is.na(thresh_array)] <-  0
+      if (structtype == 'volume'){
+        observed_cc <- GetVolAreas(thresh_array)
+      }
+      else{
+        observed_cc <- GetSurfAreas(thresh_array,structfile,matlab_path,surf_command)
+      }
+      all_cc[,nmeas] = observed_cc
     }
-    else{
-      observed_cc <- GetSurfAreas(thresh_map,structfile,matlab_path,surf_command)
+    WB_cc <- replicate(nboot,ComputeMM_WB(resid_map,
+                                        fit_map,
+                                        dist_type,
+                                        external_df,
+                                        notation,
+                                        family_dist,
+                                        structtype,
+                                        thresh = z_thresh,
+                                        structfile,
+                                        matlab_path,
+                                        surf_command,
+                                        corstr,
+                                        wave,
+                                        zcor,
+                                        correction_type = sigtype,
+                                        id_subjects))
+    for (curr_meas in 1:nmeas){
+      pval_map <- map(all_cc[,nmeas],CalculatePvalue,WB_cc=WB_cc[nmeas],nboot=nboot,sigtype=sigtype)
+      all_maps[curr_meas] <- pval_map
     }
-    WB_cc <- replicate(nboot,ComputeMM_WB(cifti_map = cifti_map,
-                                          zscore_map,
-                                          resid_map,
-                                          fit_map,
-                                          dist_type,
-                                          external_df,
-                                          notation,
-                                          family_dist,
-                                          structtype,
-                                          thresh = z_thresh,
-                                          structfile,
-                                          matlab_path,
-                                          surf_command,
-                                          corstr,
-                                          wave,
-                                          zcor,
-                                          correction_type = sigtype,
-                                          id_subjects))
-    pval_map <- map(observed_cc,CalculatePvalue,WB_cc=WB_cc,nboot=nboot,sigtype=sigtype)
   }
   else{
-    pval_map <- map(zscore_map,CalculatePvalue,WB_cc=NaN,nboot=NaN,sigtype=sigtype)
+    all_maps <- map(zscore_map,CalculatePvalue,WB_cc=NaN,nboot=NaN,sigtype=sigtype)
   }
-  return(pval_map)
+  return(all_maps)
 }
