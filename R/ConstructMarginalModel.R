@@ -100,7 +100,7 @@ ConstructMarginalModel <- function(external_df,
                                         corstr,
                                         wave,
                                         zcor,
-                                        correction_type = sigtype,
+                                        correctiontype = sigtype,
                                         id_subjects))
     for (curr_meas in 1:nmeas){
       pval_map <- map(all_cc[,nmeas],CalculatePvalue,WB_cc=WB_cc[nmeas],nboot=nboot,sigtype=sigtype)
