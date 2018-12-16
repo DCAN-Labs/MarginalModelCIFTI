@@ -59,7 +59,7 @@ ComputeMM_WB <- function(resid_map,
     resid_val = resid_map,
     sample_val = bootstrap_mult
   )
-  cifti_bootmap <- pmap(df,ApplyWB_toData)
+  cifti_bootmap <- pmap(df,ApplyWB_to_data)
   data_to_fit <- external_df 
   MM_bootmap <- map(cifti_bootmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,wave=wave,id_subjects=id_subjects)
   zscore_bootmap <- map(MM_bootmap,ComputeZscores)
