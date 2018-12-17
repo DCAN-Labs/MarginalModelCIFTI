@@ -13,7 +13,13 @@
 #' geeglm_obj <- ComputeMM(cifti_meas,external_df,notation,family_dist)
 ComputeMM <- function(cifti_meas,external_df,notation,family_dist,corstr,zcor=NULL,wave=NULL,id_subjects) {
   library("geepack")
-  data_to_fit <-  cbind(cifti_meas,external_df)
+  if (sum(is.na(unlist(cifti_meas))) > 0){
+    cifti_measb = data.frame(y=numeric(length(cifti_meas)))
+    data_to_fit <-  cbind(cifti_measb,external_df)
+  }
+  else{
+    data_to_fit <-  cbind(cifti_meas,external_df)
+  }
   geeglm_obj <- geeglm(notation, data=data_to_fit, id=data_to_fit[[id_subjects]], family=family_dist,
                        corstr=corstr, waves=wave,zcor=zcor)
   return(geeglm_obj)

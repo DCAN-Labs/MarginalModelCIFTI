@@ -9,6 +9,6 @@
 #' @examples
 #' cifti_meas <- ReframeCIFTIData(index,cifti_rawmeas)
 ReframeCIFTIdata <- function(index,cifti_rawmeas) {
-  cifti_meas <- data.frame(y = as.numeric(as.data.frame(cifti_rawmeas[index])))
+  cifti_meas <- data.frame(y = as.numeric(unlist(cifti_rawmeas[index])))
   return(cifti_meas)
 }

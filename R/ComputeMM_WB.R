@@ -54,14 +54,14 @@ ComputeMM_WB <- function(resid_map,
   } else {
     return('error: invalid argument for distribution type, please specify one of: radenbacher,mammen,webb4,webb6')
   }
-  df <- data.frame(
-    fit_val = fit_map,
-    resid_val = resid_map,
-    sample_val = bootstrap_mult
-  )
-  cifti_bootmap <- pmap(df,ApplyWB_to_data)
+  fit_mat= matrix(unlist(fit_map),nrow=ncomps,ncol=length(fit_map))
+  resid_mat = matrix(unlist(resid_map),nrow=ncomps,ncol=length(resid_map))
+  cifti_mat = fit_mat + resid_mat*bootstrap_mult
+  cifti_bootmap = relist(cifti_mat,skeleton=fit_map)
+  cifti_bootindex <- 1:length(cifti_bootmap)
+  cifti_bootscalarmap <- map(cifti_bootindex,ReframeCIFTIdata,cifti_rawmeas=cifti_bootmap)  
   data_to_fit <- external_df 
-  MM_bootmap <- map(cifti_bootmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,wave=wave,id_subjects=id_subjects)
+  MM_bootmap <- map(cifti_bootscalarmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,wave=wave,id_subjects=id_subjects)
   zscore_bootmap <- map(MM_bootmap,ComputeZscores)
   thresh_bootmap <- map(zscore_bootmap,ThreshMap,zthresh=thresh)
   if (correctiontype=='point') {
