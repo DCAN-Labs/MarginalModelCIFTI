@@ -12,7 +12,7 @@
 #' p <- CalculatePvalue(observed_cc,WB_cc,nboot,sigtype)
 CalculatePvalue <- function(observed_cc,WB_cc,nboot,sigtype){
   if(sigtype == 'cluster'){
-    p <- sum(WB_cc < observed_cc)/nboot
+    p <- sum(WB_cc > observed_cc)/nboot
   }
   else{
     p <- 2*pnorm(abs(observed_cc)*-1)

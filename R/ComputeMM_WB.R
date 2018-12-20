@@ -51,7 +51,8 @@ ComputeMM_WB <- function(resid_map,
     bootstrap_mult <- sample(c(sqrt(3/2)*-1,sqrt(1/2)*-1,sqrt(1/2),sqrt(3/2)),ncomps,replace=TRUE)
   } else if (type=='webb6') {
     bootstrap_mult <- sample(c(sqrt(3/2)*-1,-1,sqrt(1/2)*-1,sqrt(1/2),1,sqrt(3/2)),ncomps,replace=TRUE)
-  } else {
+  } else 
+  {
     return('error: invalid argument for distribution type, please specify one of: radenbacher,mammen,webb4,webb6')
   }
   fit_mat= matrix(unlist(fit_map),nrow=ncomps,ncol=length(fit_map))
@@ -60,7 +61,20 @@ ComputeMM_WB <- function(resid_map,
   cifti_bootmap = relist(cifti_mat,skeleton=fit_map)
   cifti_bootindex <- 1:length(cifti_bootmap)
   cifti_bootscalarmap <- map(cifti_bootindex,ReframeCIFTIdata,cifti_rawmeas=cifti_bootmap)  
-  data_to_fit <- external_df 
+#  MM_bootmap = list()
+#  for (curr_cifti_bootmeas in 1:length(cifti_bootscalarmap)){
+#    cifti_bootmeas <- cifti_bootscalarmap[curr_cifti_bootmeas]
+#    if (sum(is.na(unlist(cifti_bootmeas))) > 0){
+#      cifti_bootmeasb = data.frame(y=numeric(length(cifti_bootmeas)))
+#      data_to_fit <-  cbind(cifti_bootmeasb,external_df)
+#    } else
+#    {
+#      data_to_fit <-  cbind(cifti_bootmeas,external_df)
+#    }
+#    MM_bootmap[curr_cifti_meas] <- geeglm(notation, data=data_to_fit, id=data_to_fit[[id_subjects]], family=family_dist,
+#                                         corstr=corstr, waves=wave,zcor=zcor)
+#  }
+#  data_to_fit <- external_df 
   MM_bootmap <- map(cifti_bootscalarmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,wave=wave,id_subjects=id_subjects)
   zscore_bootmap <- map(MM_bootmap,ComputeZscores)
   thresh_bootmap <- map(zscore_bootmap,ThreshMap,zthresh=thresh)
@@ -79,11 +93,11 @@ ComputeMM_WB <- function(resid_map,
       thresh_bootarray[is.na(thresh_bootarray)] <-  0
       if (structtype=='volume'){
         cc <- GetVolAreas(thresh_bootarray)
-        }
-      else{
+        } else
+        {
         cc <- GetSurfAreas(thresh_bootarray,structfile,matlab_path,surf_command)
-      }
-      all_cc[nmeas] = max(cc)
+        }
+      all_cc[curr_meas] = max(cc)
     }
       return(all_cc)
   }

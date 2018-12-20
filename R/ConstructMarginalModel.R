@@ -50,8 +50,8 @@ ConstructMarginalModel <- function(external_df,
   if (structtype == 'volume'){
     cifti_alldata <- data.frame((lapply(as.character(ciftilist$file),PrepVolMetric)))
     cifti_scalarmap <- cifti_alldata
-  }
-  else{
+  } else
+  {
     cifti_alldata <- transpose(data.frame((lapply(as.character(ciftilist$file),PrepSurfMetric))))
     cifti_index <- 1:length(cifti_alldata)
     cifti_scalarmap <- map(cifti_index,ReframeCIFTIdata,cifti_rawmeas=cifti_alldata)
@@ -62,8 +62,22 @@ ConstructMarginalModel <- function(external_df,
   if (is.character(wave)) {
     wave <- read.csv(wave,header=TRUE)
   }
-  data_to_fit <- external_df 
-  cifti_map <- map(cifti_scalarmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,wave=wave,id_subjects=id_subjects)
+#  cifti_map = list()
+#  for (curr_cifti_meas in 1:length(cifti_scalarmap)){
+#    cifti_meas <- cifti_scalarmap[curr_cifti_meas]
+#    if (sum(is.na(unlist(cifti_meas))) > 0){
+#      cifti_measb = data.frame(y=numeric(length(cifti_meas)))
+#      data_to_fit <-  cbind(cifti_measb,external_df)
+#    } else
+#    {
+#      data_to_fit <-  cbind(cifti_meas,external_df)
+#    }
+#    message(data_to_fit)
+#    cifti_map[curr_cifti_meas] <- geeglm(notation, data=data_to_fit, id=data_to_fit[[id_subjects]], family=family_dist,
+#                         corstr=corstr, waves=wave,zcor=zcor)
+#  }
+#  data_to_fit <- external_df 
+  cifti_map <- lapply(cifti_scalarmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,wave=wave,id_subjects=id_subjects)
   zscore_map <- map(cifti_map,ComputeZscores)
   resid_map <- map(cifti_map,ComputeResiduals)
   fit_map <- map(cifti_map,ComputeFits)
@@ -80,11 +94,11 @@ ConstructMarginalModel <- function(external_df,
       thresh_array[is.na(thresh_array)] <-  0
       if (structtype == 'volume'){
         observed_cc <- GetVolAreas(thresh_array)
-      }
-      else{
+      } else
+      {
         observed_cc <- GetSurfAreas(thresh_array,structfile,matlab_path,surf_command)
       }
-      all_cc[,nmeas] = observed_cc
+      all_cc[,curr_meas] = observed_cc
     }
     WB_cc <- replicate(nboot,ComputeMM_WB(resid_map,
                                         fit_map,
@@ -103,11 +117,16 @@ ConstructMarginalModel <- function(external_df,
                                         correctiontype = sigtype,
                                         id_subjects))
     for (curr_meas in 1:nmeas){
-      pval_map <- map(all_cc[,nmeas],CalculatePvalue,WB_cc=WB_cc[nmeas],nboot=nboot,sigtype=sigtype)
-      all_maps[curr_meas] <- pval_map
+      pval_map <- map(all_cc[,curr_meas],CalculatePvalue,WB_cc=WB_cc[curr_meas,],nboot=nboot,sigtype=sigtype)
+      if (curr_meas == 1){
+        all_maps = pval_map
+      } else
+      {
+        all_maps <- list(all_maps,pval_map)
+      }
     }
-  }
-  else{
+  } else
+  {
     all_maps <- map(zscore_map,CalculatePvalue,WB_cc=NaN,nboot=NaN,sigtype=sigtype)
   }
   return(all_maps)
