@@ -38,7 +38,9 @@ ConstructMarginalModel <- function(external_df,
                                    nboot,
                                    p_thresh,
                                    sigtype,
-                                   id_subjects='subid'){
+                                   id_subjects='subid',
+                                   output_directory='~/',
+                                   ncores=1){
   library("purrr")
   library("cifti")
   library("gifti")
@@ -46,7 +48,11 @@ ConstructMarginalModel <- function(external_df,
   library("Matrix")
   library("oro.nifti")
   library("mmand")
+  library("parallel")
+  curr_directory = getwd()
+  setwd(output_directory)
   ciftilist <- read.csv(concfile,header=FALSE,col.names="file")
+  print("loading imaging data")
   if (structtype == 'volume'){
     cifti_alldata <- data.frame((lapply(as.character(ciftilist$file),PrepVolMetric)))
     cifti_scalarmap <- cifti_alldata
@@ -56,32 +62,25 @@ ConstructMarginalModel <- function(external_df,
     cifti_index <- 1:length(cifti_alldata)
     cifti_scalarmap <- map(cifti_index,ReframeCIFTIdata,cifti_rawmeas=cifti_alldata)
   }
+  print("loading non-imaging data")
   if (is.character(external_df)) {
     external_df <- read.csv(external_df,header=TRUE)
   }
   if (is.character(wave)) {
+    print("loading longitudinal data")
     wave <- read.csv(wave,header=TRUE)
   }
-#  cifti_map = list()
-#  for (curr_cifti_meas in 1:length(cifti_scalarmap)){
-#    cifti_meas <- cifti_scalarmap[curr_cifti_meas]
-#    if (sum(is.na(unlist(cifti_meas))) > 0){
-#      cifti_measb = data.frame(y=numeric(length(cifti_meas)))
-#      data_to_fit <-  cbind(cifti_measb,external_df)
-#    } else
-#    {
-#      data_to_fit <-  cbind(cifti_meas,external_df)
-#    }
-#    message(data_to_fit)
-#    cifti_map[curr_cifti_meas] <- geeglm(notation, data=data_to_fit, id=data_to_fit[[id_subjects]], family=family_dist,
-#                         corstr=corstr, waves=wave,zcor=zcor)
-#  }
-#  data_to_fit <- external_df 
+  print("running marginal model on observed data")
   cifti_map <- lapply(cifti_scalarmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,wave=wave,id_subjects=id_subjects)
+  print("Normalizing observed marginal model estimates")
   zscore_map <- map(cifti_map,ComputeZscores)
+  save(zscore_map,file = "zscore_observed.Rdata")
   resid_map <- map(cifti_map,ComputeResiduals)
   fit_map <- map(cifti_map,ComputeFits)
+  print("thresholding observed z scores")
   thresh_map <- map(zscore_map,ThreshMap,zthresh=z_thresh)
+  save(thresh_map,file = "zscore_thresh_observed.Rdata")
+  print("performing cluster detection")
   if (sigtype == 'cluster'){
     varlist <- all.vars(notation)
     nmeas <- length(varlist)
@@ -99,23 +98,28 @@ ConstructMarginalModel <- function(external_df,
         observed_cc <- GetSurfAreas(thresh_array,structfile,matlab_path,surf_command)
       }
       all_cc[,curr_meas] = observed_cc
+      save(all_cc,file = "connected_components_observed.Rdata")
     }
-    WB_cc <- replicate(nboot,ComputeMM_WB(resid_map,
-                                        fit_map,
-                                        dist_type,
-                                        external_df,
-                                        notation,
-                                        family_dist,
-                                        structtype,
+    print("performing permutation test")
+    cl <- makeForkCluster(nnodes = ncores)
+    WB_cc <- parSapply(cl,1:nboot,ComputeMM_WB,resid_map=resid_map,
+                                        fit_map=fit_map,
+                                        type=dist_type,
+                                        external_df=external_df,
+                                        notation=notation,
+                                        family_dist=family_dist,
+                                        structtype=structtype,
                                         thresh = z_thresh,
-                                        structfile,
-                                        matlab_path,
-                                        surf_command,
-                                        corstr,
-                                        wave,
-                                        zcor,
+                                        structfile=structfile,
+                                        matlab_path=matlab_path,
+                                        surf_command=surf_command,
+                                        corstr=corstr,
+                                        wave=wave,
+                                        zcor=zcor,
                                         correctiontype = sigtype,
-                                        id_subjects))
+                                        id_subjects=id_subjects)
+    stopCluster(cl)
+    print("calculating p values for observed data using null distribution(s)")
     for (curr_meas in 1:nmeas){
       pval_map <- map(all_cc[,curr_meas],CalculatePvalue,WB_cc=WB_cc[curr_meas,],nboot=nboot,sigtype=sigtype)
       if (curr_meas == 1){
@@ -128,6 +132,8 @@ ConstructMarginalModel <- function(external_df,
   } else
   {
     all_maps <- map(zscore_map,CalculatePvalue,WB_cc=NaN,nboot=NaN,sigtype=sigtype)
+    save(all_maps,file = "pval_maps.Rdata")
   }
+  setwd(curr_directory)
   return(all_maps)
 }

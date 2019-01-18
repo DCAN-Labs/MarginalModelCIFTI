@@ -19,7 +19,7 @@
 #' @examples
 #' max_cc <- ComputeMM_WB(cifti_map,zscore_map,resid_map,fit_map,type,external_df,
 #' notation,family_dist,structtype,thresh,structfile,matlab_path,surf_command,correctiontype)
-ComputeMM_WB <- function(resid_map,
+ComputeMM_WB <- function(x,resid_map,
                          fit_map,
                          type,
                          external_df,
@@ -42,6 +42,7 @@ ComputeMM_WB <- function(resid_map,
   library("Matrix")
   library("oro.nifti")
   library("mmand")
+  cat("running simulation #",x)
   ncomps <- length(unlist(resid_map[1]))
   if (type=='radenbacher'){
     bootstrap_mult <- sample(c(-1,1),ncomps,replace=TRUE)
