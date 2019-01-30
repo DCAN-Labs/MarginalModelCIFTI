@@ -87,15 +87,16 @@ ConstructMarginalModel <- function(external_df,
   print("running marginal model on observed data")
   start_model_time = proc.time()
   cifti_map <- lapply(cifti_scalarmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,wave=wave,id_subjects=id_subjects)
-  ncomps <- length(coef(cifti_map[min(which((lengths(cifti_map) > 1) == TRUE))]$V))
+  varlist <- all.vars(notation)
+  nmeas <- length(varlist)
   finish_model_time = proc.time() - start_model_time
   cat("modeling complete. Time elapsed: ",finish_model_time[3],"s")
   start_normthresh_time = proc.time()
   print("Normalizing observed marginal model estimates")
-  zscore_map <- map(cifti_map,ComputeZscores,ncomps)
+  zscore_map <- map(cifti_map,ComputeZscores,nmeas)
   save(zscore_map,file = "zscore_observed.Rdata")
-  resid_map <- map(cifti_map,ComputeResiduals,ncomps)
-  fit_map <- map(cifti_map,ComputeFits,ncomps)
+  resid_map <- map(cifti_map,ComputeResiduals,nmeas)
+  fit_map <- map(cifti_map,ComputeFits,nmeas)
   print("thresholding observed z scores")
   thresh_map <- map(zscore_map,ThreshMap,zthresh=z_thresh)
   save(thresh_map,file = "zscore_thresh_observed.Rdata")
@@ -104,9 +105,7 @@ ConstructMarginalModel <- function(external_df,
   print("performing cluster detection")
   start_clust_time = proc.time()
   if (sigtype == 'cluster'){
-    varlist <- all.vars(notation)
-    nmeas <- length(varlist)
-    if (sigtype == 'surface'){
+    if (structtype == 'surface'){
       all_cc = matrix(data=NA,nrow=length(thresh_map),ncol=nmeas)     
     } else 
     {
@@ -152,7 +151,7 @@ ConstructMarginalModel <- function(external_df,
                                         correctiontype = sigtype,
                                         id_subjects=id_subjects,
                                         cifti_dim=cifti_dim,
-                                        nmeas=ncomps,
+                                        nmeas=nmeas,
                                         seeds=seeds)
     stopCluster(cl)
     finish_perm_time = proc.time() - start_perm_time
