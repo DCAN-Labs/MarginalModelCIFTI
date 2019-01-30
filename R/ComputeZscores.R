@@ -8,6 +8,18 @@
 #' @export
 #' @examples 
 #' zscores <- ComputeZscores(geeglm_obj)
-ComputeZscores <- function(geeglm_obj) {
-  zscores_model <- qnorm(0.99999999999999-pchisq((coef(geeglm_obj)/sqrt(diag(geeglm_obj$geese$vbeta)))^2,1, lower.tail=F))
+ComputeZscores <- function(geeglm_obj,nmaps) {
+  if (is.numeric(unlist(geeglm_obj))) {
+    zscores_model = numeric(nmaps)
+  } else
+  {
+    if (is.object(geeglm_obj)) {
+      gee_obj = geeglm_obj
+    } else
+    {
+      gee_obj <- geeglm_obj$V
+    }
+    zscores_model <- qnorm(0.99999999999999-pchisq((coef(gee_obj)/sqrt(diag(gee_obj$geese$vbeta)))^2,1, lower.tail=F))    
+  }
+  return(zscores_model)
 }

@@ -4,7 +4,7 @@
 \alias{ComputeFits}
 \title{ComputeFits -- get estimated fits from a geeglm_object}
 \usage{
-ComputeFits(geeglm_obj)
+ComputeFits(geeglm_obj, nmaps)
 }
 \arguments{
 \item{geeglm_obj}{An GLM object that is produced from computing the marginal model}

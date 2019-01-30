@@ -14,14 +14,16 @@
 ComputeMM <- function(cifti_meas,external_df,notation,family_dist,corstr,zcor=NULL,wave=NULL,id_subjects) {
   library("geepack")
   if (sum(is.na(unlist(cifti_meas))) > 0){
-    cifti_measb = data.frame(y=numeric(length(cifti_meas)))
-    data_to_fit <-  cbind(cifti_measb,external_df)
+    geeglm_obj = 0
+  }
+  else if (var(cifti_meas) == 0) {
+    geeglm_obj = 0
   }
   else{
-    data_to_fit <-  cbind(cifti_meas,external_df)
+    data_to_fit <-  cbind(y = cifti_meas,external_df)
+    environment(notation) <- environment()
+    geeglm_obj <- geeglm(notation, data=data_to_fit, id=data_to_fit[[id_subjects]], family=family_dist,
+                         corstr=corstr, waves=wave,zcor=zcor)
   }
-  environment(notation) <- environment()
-  geeglm_obj <- geeglm(notation, data=data_to_fit, id=data_to_fit[[id_subjects]], family=family_dist,
-                       corstr=corstr, waves=wave,zcor=zcor)
   return(geeglm_obj)
 }

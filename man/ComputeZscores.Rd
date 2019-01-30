@@ -4,7 +4,7 @@
 \alias{ComputeZscores}
 \title{ComputeZscores -- convert estimated Wald statistics to z scores}
 \usage{
-ComputeZscores(geeglm_obj)
+ComputeZscores(geeglm_obj, nmaps)
 }
 \arguments{
 \item{geeglm_obj}{An GLM object that is produced from computing the marginal model}

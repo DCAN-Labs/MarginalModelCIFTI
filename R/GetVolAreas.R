@@ -8,7 +8,11 @@
 #' component_sizes <- GetVolAreas(bin_image)
 GetVolAreas <- function(bin_image) {
   library("mmand")
-  components <- components(bin_image,c(1,1,1))
-  W <- as.vector(na.exclude(unique(components)))
-  return(sapply(1:length(W),function(x) sum(components==x,na.rm=TRUE)))
+  component_mat <- components(bin_image,c(1,1,1))
+  components_list <- unique(as.list(component_mat))
+  components_vol <- array(data = 0, dim = dim(bin_image))
+  for (curr_comp in 1:length(components_list)) {
+    components_vol[component_mat == curr_comp] <- as.numeric(components_list[curr_comp])
+    }
+  return(components_vol)
 }

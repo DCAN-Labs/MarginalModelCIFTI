@@ -4,7 +4,7 @@
 \alias{ComputeResiduals}
 \title{ComputeResiduals -- get residuals from a geeglm_object}
 \usage{
-ComputeResiduals(geeglm_obj)
+ComputeResiduals(geeglm_obj, nmaps)
 }
 \arguments{
 \item{geeglm_obj}{An GLM object that is produced from computing the marginal model}

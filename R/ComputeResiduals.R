@@ -8,6 +8,18 @@
 #' @export
 #' @examples 
 #' resids <- ComputeResiduals(geeglm_obj)
-ComputeResiduals <- function(geeglm_obj) {
-  residuals_model <- resid(geeglm_obj)
+ComputeResiduals <- function(geeglm_obj,nmaps) {
+  if (is.numeric(unlist(geeglm_obj))) {
+    residual_model = numeric(nmaps)
+  } else
+  {
+    if (is.object(geeglm_obj)) {
+      gee_obj = geeglm_obj
+    } else
+    {
+      gee_obj <- geeglm_obj$V
+    }
+    residual_model <- resid(gee_obj)    
+  }
+  return(residual_model)
 }

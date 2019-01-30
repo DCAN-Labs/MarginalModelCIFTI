@@ -8,6 +8,18 @@
 #' @export
 #' @examples 
 #' fits <- ComputeFits(geeglm_obj)
-ComputeFits <- function(geeglm_obj) {
-  model_fits <- fitted(geeglm_obj)
+ComputeFits <- function(geeglm_obj,nmaps) {
+  if (is.numeric(unlist(geeglm_obj))) {
+    fitted_model = numeric(nmaps)
+  } else
+  {
+    if (is.object(geeglm_obj)) {
+      gee_obj = geeglm_obj
+    } else
+    {
+      gee_obj <- geeglm_obj$V
+    }
+    fitted_model <- fitted(gee_obj)   
+  }
+  return(fitted_model)
 }

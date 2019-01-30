@@ -34,7 +34,10 @@ ComputeMM_WB <- function(x,resid_map,
                          wave,
                          zcor,
                          correctiontype,
-                         id_subjects) {
+                         id_subjects,
+                         cifti_dim,
+                         nmeas,
+                         seeds) {
   library("purrr")
   library("cifti")
   library("gifti")
@@ -44,6 +47,7 @@ ComputeMM_WB <- function(x,resid_map,
   library("mmand")
   cat("running simulation #",x)
   ncomps <- length(unlist(resid_map[1]))
+  set.seed(seeds[x])
   if (type=='radenbacher'){
     bootstrap_mult <- sample(c(-1,1),ncomps,replace=TRUE)
   } else if (type=='mammen'){
@@ -77,14 +81,12 @@ ComputeMM_WB <- function(x,resid_map,
 #  }
 #  data_to_fit <- external_df 
   MM_bootmap <- map(cifti_bootscalarmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,wave=wave,id_subjects=id_subjects)
-  zscore_bootmap <- map(MM_bootmap,ComputeZscores)
+  zscore_bootmap <- map(MM_bootmap,ComputeZscores,nmeas)
   thresh_bootmap <- map(zscore_bootmap,ThreshMap,zthresh=thresh)
   if (correctiontype=='point') {
     return(max(zscore_bootmap))
   }
   else if (correctiontype=='cluster'){
-    varlist <- all.vars(notation)
-    nmeas <- length(varlist)
     all_cc = list(1:nmeas)
     for (curr_meas in 1:nmeas){
       thresh_bootarray = unlist(thresh_bootmap)
@@ -93,12 +95,13 @@ ComputeMM_WB <- function(x,resid_map,
       thresh_bootarray <- as.numeric(thresh_bootarray)
       thresh_bootarray[is.na(thresh_bootarray)] <-  0
       if (structtype=='volume'){
-        cc <- GetVolAreas(thresh_bootarray)
+        thresh_bootvol <- RevertVolume(thresh_bootarray,cifti_dim)
+        cc <- GetVolAreas(thresh_bootvol)
         } else
         {
         cc <- GetSurfAreas(thresh_bootarray,structfile,matlab_path,surf_command)
         }
-      all_cc[curr_meas] = max(cc)
+      all_cc[curr_meas] = max(cc,na.rm=TRUE)
     }
       return(all_cc)
   }
