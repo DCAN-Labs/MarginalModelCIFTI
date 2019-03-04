@@ -1,0 +1,469 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "*To install MarginalModelCifti, one should do the following:  <br/>*\n",
+    "0) Follow Darrick Sturgeon's instructions on how to setup exajupyter for R: https://aircwiki.ohsu.edu/ExaJupyter <br/>\n",
+    "1) Open a new terminal on exacloud <br/>\n",
+    "2) make a directory for the MarginalModelCifti package `mkdir MarginalModelCifti` <br/>\n",
+    "3) enter the directory `cd MarginalModelCifti` <br/>\n",
+    "4) clone the MarginalModelCifti repository `git clone https://gitlab.com/Fair_lab/marginalmodelcifti.git ./` <br/>\n",
+    "5) return to your initial home directory `cd ..` <br/>\n",
+    "5) Type `R` <br/>\n",
+    "6) After a prompt appears, make sure devtools is installed by typing `install.packages(\"devtools\")` <br/>\n",
+    "7) Load devtools `library(devtools)`  <br/>\n",
+    "8) install the MarginalModelCifti package `install(\"MarginalModelCifti/\")`  <br/>\n",
+    "\n",
+    "*NOTE: You may also want to clone the SurfConnectivity package, in case you do not have access to it.* <br/>\n",
+    "a) open a new terminal on exacloud <br/>\n",
+    "b) make a directory for SurfConnectivity `mkdir SurfConnectivity` <br/>\n",
+    "c) go into SurfConnectivity folder `cd SurfConnectivity` <br/>\n",
+    "d) clone the SurfConnectivity repository here `git clone https://gitlab.com/Fair_lab/surfconnectivity.git ./` <br/>"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Call the MarginalModelCifti library -- if this errors you will need to install it using devtools"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "library(MarginalModelCifti)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Set your projects folder, which is where you plan to run the analysis, then go to the folder"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "projectsfolder=\"/home/exacloud/lustre1/fnl_lab/projects/marginalmodelciftitest\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "'/home/exacloud/lustre1/fnl_lab/projects/marginalmodelciftitest'"
+      ],
+      "text/latex": [
+       "'/home/exacloud/lustre1/fnl\\_lab/projects/marginalmodelciftitest'"
+      ],
+      "text/markdown": [
+       "'/home/exacloud/lustre1/fnl_lab/projects/marginalmodelciftitest'"
+      ],
+      "text/plain": [
+       "[1] \"/home/exacloud/lustre1/fnl_lab/projects/marginalmodelciftitest\""
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "getwd()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "setwd(projectsfolder)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "'/home/exacloud/lustre1/fnl_lab/projects/marginalmodelciftitest'"
+      ],
+      "text/latex": [
+       "'/home/exacloud/lustre1/fnl\\_lab/projects/marginalmodelciftitest'"
+      ],
+      "text/markdown": [
+       "'/home/exacloud/lustre1/fnl_lab/projects/marginalmodelciftitest'"
+      ],
+      "text/plain": [
+       "[1] \"/home/exacloud/lustre1/fnl_lab/projects/marginalmodelciftitest\""
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "getwd()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now declare the needed variables to run the MarginalModelPackage <br/> Set the below variable `external_df` to your external (i.e. non-imaging) dataset. The dataset should be a csv with headers representing the variables."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 43,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "external_df='/home/exacloud/lustre1/fnl_lab/projects/marginalmodelciftitest/ucirvine_DHA_zscores_STYNER_wo6noDHAdata_59subs.csv'"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "set the below variable `concfile` to a single column textfile, where each row contains a path to each participant's metric file. <br/> The metric file should be ordered in the same order as the `external_df` file"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 44,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "concfile='/home/exacloud/lustre1/fnl_lab/projects/marginalmodelciftitest/righthippo_left.csv'"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "set the below variable `structtype` to the type of brain structure (i.e. \"surface\" or \"volume\") for the metric file. <br/> This is needed for the cluster detection to work properly."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 45,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "structtype=\"surface\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "If the `structtype` is set to \"surface\", set the below variable `structfile` to the corresponding surface file. <br/> This is needed for surface-based cluster detection. The value can be set to NULL for volumes."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 46,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "structfile='/home/exacloud/lustre1/fnl_lab/projects/marginalmodelciftitest/2049.L.midthickness.32k_fs_LR.surf.gii'"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "If the `structtype` is set to \"surface\", set the below variable `matlab_path` to the matlab2016b compiler."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 47,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "matlab_path='/home/exacloud/lustre1/fnl_lab/code/external/utilities/Matlab2016bRuntime/v91'"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "If the `structtype` is set to \"surface\", set the below variable to the SurfConnectivity script"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 48,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "surf_command='/home/exacloud/lustre1/fnl_lab/projects/FAIR_users/Feczko/code_in_dev/SurfConnectivity/run_ComputeComponents.sh'"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Specific the model you want to run in the below variable `notation`. <br/> Use the function `formula` to make a formal notation within R. The predicted variable will always be `y` representing the values in the metric file. The predictor variables should use the column names within the `external_df` csv header."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 49,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "notation=formula(y~Z_ALLDATA_22_6_AVERAGE)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "set the below variable `corstr` to the correlation structure of the cases. Usually this should just be \"independence\"."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 50,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "corstr=\"independence\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "set the below variable `family_dist` to the appropriate distribution of your data, \"gaussian\" is the default"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 51,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "family_dist=\"gaussian\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "set the below variable `dist_type` to the distribution used for wild bootstrapping. <br/> Acceptable values are \"radenbacher\", \"webb4\", \"webb6\", and \"mammen\"."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 52,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "dist_type=\"radenbacher\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "set the below variable `z_thresh` to the z statistic threshold used for determining observed and permuted cluster sizes"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 53,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "z_thresh=2.3"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "set the below variable `nboot` to the number of wild bootstraps to perform. <br/> The precision of the p value is equal to 1/`nboot`. For example, if 1000 bootstraps are selected, the smallest p value can be 0.001. <br/> WARNING, this part can be slow."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 54,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "nboot=1000"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "set the below variable `p_thresh` to the p value threshold for assessing significant clusters -- currently this has no functionality"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 55,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "p_thresh=0.05"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "set the below variable `sigtype` to determine how to perform multiple comparison correction. Acceptable values are \"point\" (FWE for voxels) and \"cluster\"."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 56,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "sigtype=\"cluster\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "set the below variable `id_subjects` to the column header containing the subject id in the `external_df` file"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 57,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "id_subjects=\"idchild\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "set the below variable `output_directory` to where you want to save your outputs"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 58,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "output_directory=\"/home/exacloud/lustre1/fnl_lab/projects/marginalmodelciftitest/outputs/left\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "set the below variable `ncores` to how many CPUs to run permutation testing in parallel"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 59,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ncores=12"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The below options are optional and are set to NULL by default <br/> set the below variable `wave` to a csv file that denotes an unusual order for longitudinal data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 61,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "wave=NULL"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "set the below variable `zcor` to a custom covariance matrix to denote participant similarity (e.g. a kinship or site matrix)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 62,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "zcor=NULL"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "With all the variables determined, you can now run the MarginalModel package using the `ConstructMarginalModel` command <br/>\n",
+    "If one has run all of the prior commands, the below command will never need to be changed :)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "all_maps  <- ConstructMarginalModel(external_df=external_df,concfile=concfile,structtype=structtype,structfile=structfile,matlab_path=matlab_path,surf_command=surf_command,wave=wave,notation=notation,zcor=zcor,corstr=corstr,family_dist=family_dist,dist_type=dist_type,z_thresh=z_thresh,nboot=nboot,p_thresh=p_thresh,sigtype=sigtype,id_subjects=id_subjects,output_directory=output_directory,ncores=ncores)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "If no errors occur, the MarginalModelCifti will complete! It takes about 7-10 minutes per permutation, so 1000 will take 15-18 hours."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "R",
+   "language": "R",
+   "name": "ir"
+  },
+  "language_info": {
+   "codemirror_mode": "r",
+   "file_extension": ".r",
+   "mimetype": "text/x-r-source",
+   "name": "R",
+   "pygments_lexer": "r",
+   "version": "3.5.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
