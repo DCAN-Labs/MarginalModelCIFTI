@@ -40,16 +40,19 @@ ConstructMarginalModel <- function(external_df,
                                    sigtype,
                                    id_subjects='subid',
                                    output_directory='~/',
-                                   ncores=1){
+                                   ncores=1,
+                                   fastSwE = TRUE,
+                                   adjustment = NULL){
   initial_time = proc.time()
-  library("purrr")
-  library("cifti")
-  library("gifti")
-  library("geepack")
-  library("Matrix")
-  library("oro.nifti")
-  library("mmand")
-  library("parallel")
+  require(purrr)
+  require(cifti)
+  require(gifti)
+  require(geepack)
+  require(Matrix)
+  require(oro.nifti)
+  require(mmand)
+  require(parallel)
+  require(Rfast)
   curr_directory = getwd()
   setwd(output_directory)
   ciftilist <- read.csv(concfile,header=FALSE,col.names="file")
@@ -69,14 +72,21 @@ ConstructMarginalModel <- function(external_df,
     cifti_scalarmap <- as.data.frame(cifti_alldata)
   } else
   {
-    cifti_alldata <- transpose(data.frame((lapply(as.character(ciftilist$file),PrepSurfMetric))))
-    cifti_index <- 1:length(cifti_alldata)
-    cifti_scalarmap <- map(cifti_index,ReframeCIFTIdata,cifti_rawmeas=cifti_alldata)
-    cifti_dim=NULL
+    cifti_alldata <- t(data.frame((lapply(as.character(ciftilist$file),PrepSurfMetric))))
+    Nelm <- dim(cifti_alldata)[2]
+    if (fastSwE == FALSE){
+      cifti_index <- 1:length(cifti_alldata)
+      cifti_scalarmap <- map(cifti_index,ReframeCIFTIdata,cifti_rawmeas=cifti_alldata)
+      cifti_dim=NULL
+    }
   }
   print("loading non-imaging data")
   if (is.character(external_df)) {
     external_df <- read.csv(external_df,header=TRUE)
+    if (fastSwE == TRUE){
+      external_df <- ParseDf(external_df = external_df,notation = notation)
+      nmeas <- dim(external_df)[2]
+    }
   }
   if (is.character(wave)) {
     print("loading longitudinal data")
@@ -86,27 +96,47 @@ ConstructMarginalModel <- function(external_df,
   cat("loading data complete. Time elapsed: ",finish_load_time[3],"s")  
   print("running marginal model on observed data")
   start_model_time = proc.time()
-  cifti_map <- lapply(cifti_scalarmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,wave=wave,id_subjects=id_subjects)
-  varlist <- all.vars(notation)
-  nmeas <- length(varlist)
-  finish_model_time = proc.time() - start_model_time
-  cat("modeling complete. Time elapsed: ",finish_model_time[3],"s")
-  start_normthresh_time = proc.time()
-  print("Normalizing observed marginal model estimates")
-  zscore_map <- map(cifti_map,ComputeZscores,nmeas)
-  save(zscore_map,file = "zscore_observed.Rdata")
-  resid_map <- map(cifti_map,ComputeResiduals,nmeas)
-  fit_map <- map(cifti_map,ComputeFits,nmeas)
-  print("thresholding observed z scores")
-  thresh_map <- map(zscore_map,ThreshMap,zthresh=z_thresh)
-  save(thresh_map,file = "zscore_thresh_observed.Rdata")
-  finish_normthresh_time = proc.time() - start_normthresh_time
-  cat("thresholding complete. Time elapsed: ", finish_normthresh_time[3],"s")
+  if (fastSwE == FALSE){
+    cifti_map <- lapply(cifti_scalarmap,ComputeMM,external_df=external_df,notation=notation,family_dist=family_dist,corstr=corstr,zcor=zcor,wave=wave,id_subjects=id_subjects)
+    finish_model_time = proc.time() - start_model_time
+    cat("modeling complete. Time elapsed: ",finish_model_time[3],"s")
+    varlist <- all.vars(notation)
+    nmeas <- length(varlist)
+    start_normthresh_time = proc.time()
+    print("Normalizing observed marginal model estimates")
+    zscore_map <- map(cifti_map,ComputeZscores,nmeas)
+    save(zscore_map,file = "zscore_observed.Rdata")
+    resid_map <- map(cifti_map,ComputeResiduals,nmeas)
+    fit_map <- map(cifti_map,ComputeFits,nmeas)
+    print("thresholding observed z scores")
+    thresh_map <- map(zscore_map,ThreshMap,zthresh=z_thresh)
+    save(thresh_map,file = "zscore_thresh_observed.Rdata")
+    finish_normthresh_time = proc.time() - start_normthresh_time
+    cat("thresholding complete. Time elapsed: ", finish_normthresh_time[3],"s")
+    } else
+  {
+    cifti_map <- lm.fit(external_df,cifti_alldata)
+    beta_map <- cifti_map$coefficients
+    resid_map <- cifti_map$residuals
+    fit_map <- cifti_map$fitted.values
+    t_map <- ComputeFastSwE(X=external_df,nested=wave,Nelm=Nelm,resid_map=resid_map,npredictors=nmeas,beta_map=beta_map,adjustment=adjustment)
+    finish_model_time = proc.time() - start_model_time
+    cat("modeling complete. Time elapsed: ",finish_model_time[3],"s")
+    start_normthresh_time = proc.time()
+    print("Normalizing observed marginal model estimates")
+    zscore_map <- t(sapply(1:nmeas,function(x) {(t_map[x,] - mean(t_map[x,],na.rm=TRUE))/sd(t_map[x,],na.rm=TRUE)}))
+    save(zscore_map,file = "zscore_observed.Rdata")
+    print("thresholding observed z scores")
+    thresh_map <- t(sapply(1:nmeas,function(x) zscore_map[x,] > z_thresh))
+    save(thresh_map,file = "zscore_thresh_observed.Rdata")
+    finish_normthresh_time = proc.time() - start_normthresh_time    
+    cat("thresholding complete. Time elapsed: ", finish_normthresh_time[3],"s")
+  }
   print("performing cluster detection")
   start_clust_time = proc.time()
   if (sigtype == 'cluster'){
     if (structtype == 'surface'){
-      all_cc = matrix(data=NA,nrow=length(thresh_map),ncol=nmeas)     
+      all_cc = matrix(data=NA,nrow=Nelm,ncol=nmeas)     
     } else 
     {
       all_cc = array(data=NA,dim=c(nmeas,cifti_dim))    
@@ -152,7 +182,9 @@ ConstructMarginalModel <- function(external_df,
                                         id_subjects=id_subjects,
                                         cifti_dim=cifti_dim,
                                         nmeas=nmeas,
-                                        seeds=seeds)
+                                        seeds=seeds,
+                                        fastSwE=fastSwE,
+                                        adjustment=adjustment)
     stopCluster(cl)
     finish_perm_time = proc.time() - start_perm_time
     cat("permutation testing complete. Time elapsed",finish_perm_time[3],"s")

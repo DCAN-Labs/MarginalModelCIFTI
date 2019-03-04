@@ -7,7 +7,8 @@
 ConstructMarginalModel(external_df, concfile, structtype, structfile,
   matlab_path, surf_command, wave = NULL, notation, zcor = NULL,
   corstr, family_dist, dist_type, z_thresh, nboot, p_thresh, sigtype,
-  id_subjects = "subid", output_directory = "~/", ncores = 1)
+  id_subjects = "subid", output_directory = "~/", ncores = 1,
+  fastSwE = TRUE, adjustment = NULL)
 }
 \arguments{
 \item{external_df}{A data frame comprising non-brain measures to model. Can be specified as a string to a csv file with appropriate headers.}

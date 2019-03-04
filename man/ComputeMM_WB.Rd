@@ -6,7 +6,8 @@
 \usage{
 ComputeMM_WB(x, resid_map, fit_map, type, external_df, notation,
   family_dist, structtype, thresh, structfile, matlab_path, surf_command,
-  corstr, wave, zcor, correctiontype, id_subjects, cifti_dim, nmeas, seeds)
+  corstr, wave, zcor, correctiontype, id_subjects, cifti_dim, nmeas, seeds,
+  fastSwE, adjustment)
 }
 \arguments{
 \item{resid_map}{The residual map from the geeglm analysis}
