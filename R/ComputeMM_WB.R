@@ -114,6 +114,8 @@ ComputeMM_WB <- function(x,resid_map,
       t_bootmap <- ComputeFastSwE(X=external_df,nested=wave,Nelm=Nelm,resid_map=resid_bootmap,npredictors=nmeas,beta_map=beta_bootmap,adjustment=adjustment)
       zscore_bootmap <- t(sapply(1:nmeas,function(x) {(t_bootmap[x,] - mean(t_bootmap[x,],na.rm=TRUE))/sd(t_bootmap[x,],na.rm=TRUE)}))
       thresh_bootmap <- t(sapply(1:nmeas,function(x) zscore_bootmap[x,] > z_thresh))
+      print(unique(thresh_bootmap[1,]))
+      print(unique(thresh_bootmap[2,]))
     }
   if (correctiontype=='point') {
     return(max(zscore_bootmap))
@@ -125,6 +127,7 @@ ComputeMM_WB <- function(x,resid_map,
       mask_bootvector = 1:nmeas == curr_meas
       thresh_bootarray <- thresh_bootarray[mask_bootvector]
       thresh_bootarray <- as.numeric(thresh_bootarray)
+      print(unique(thresh_bootarray))
       thresh_bootarray[is.na(thresh_bootarray)] <-  0
       if (structtype=='volume'){
         thresh_bootvol <- RevertVolume(thresh_bootarray,cifti_dim)
