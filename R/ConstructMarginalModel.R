@@ -91,6 +91,7 @@ ConstructMarginalModel <- function(external_df,
   if (is.character(wave)) {
     print("loading longitudinal data")
     wave <- read.csv(wave,header=TRUE)
+    if (dim(wave)[2] > 1) wave <- DetermineNestedGroups(wave)
   }
   finish_load_time = proc.time()-start_load_time
   cat("loading data complete. Time elapsed: ",finish_load_time[3],"s")  
