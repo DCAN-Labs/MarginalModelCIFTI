@@ -27,7 +27,8 @@ ComputeFastSwE <- function(X,nested,Nelm,resid_map,npredictors,beta_map,adjustme
   S      = array(0,dim=c(npredictors,npredictors,Nelm))
   S0     = array(0,dim=c(1,npredictors,Nelm))
   if (is.null(nested)){
-    if (adjustment == "HC2"){
+    if (is.null(adjustment)){
+    } else if (adjustment == "HC2"){
       resid_map <- resid_map/sqrt(1 - hat_adjust)
     } else if (adjustment == "HC3"){
       resid_map <- resid_map/(1 - hat_adjust)

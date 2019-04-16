@@ -61,11 +61,10 @@ ConstructMarginalModel <- function(external_df,
   if (structtype == 'volume'){
     cifti_file <- PrepVolMetric(as.character(ciftilist$file[1]))
     cifti_dim <- dim(cifti_file)
-    cifti_alldata <- array(dim = c(length(ciftilist$file),cifti_dim))
-    remove(cifti_file)
+    cifti_alldata <- array(dim = c(length(ciftilist$file),cifti_dim[1]*cifti_dim[2]*cifti_dim[3]))
     count = 1
     for (filename in ciftilist$file) {
-      cifti_alldata[count,,,] = PrepVolMetric(as.character(ciftilist$file[count]))
+      cifti_alldata[count,] = ConvertVolume(PrepVolMetric(as.character(ciftilist$file[count])),cifti_dim)
       count = count + 1
     }
     remove(count)
@@ -120,28 +119,71 @@ ConstructMarginalModel <- function(external_df,
     beta_map <- cifti_map$coefficients
     resid_map <- cifti_map$residuals
     fit_map <- cifti_map$fitted.values
+    Nelm <- dim(beta_map)[2]
     t_map <- ComputeFastSwE(X=external_df,nested=wave,Nelm=Nelm,resid_map=resid_map,npredictors=nmeas,beta_map=beta_map,adjustment=adjustment)
+    if (structtype == 'surface'){
+      for (curr_map in 1:dim(t_map)[1]){
+        WriteVectorToGifti(metric_data = t_map[curr_map,],
+                           surf_template_file = as.character(ciftilist[1,1]),
+                           surf_command = surf_command,
+                           matlab_path = matlab_path,
+                           output_file = paste(output_directory,'/','t_map',curr_map,'.func.gii',sep=""))      
+      }       
+    } else
+    {
+      for (curr_map in 1:dim(t_map)[1]){
+        temp_map <- RevertVolume(t_map[curr_map,],cifti_dim)
+        cifti_file[] <- temp_map
+        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','t_map',curr_map,sep=""))
+      }
+    }
     finish_model_time = proc.time() - start_model_time
     cat("modeling complete. Time elapsed: ",finish_model_time[3],"s")
     start_normthresh_time = proc.time()
     print("Normalizing observed marginal model estimates")
     zscore_map <- t(sapply(1:nmeas,function(x) {(t_map[x,] - mean(t_map[x,],na.rm=TRUE))/sd(t_map[x,],na.rm=TRUE)}))
-    save(zscore_map,file = "zscore_observed.Rdata")
+    if (structtype == 'surface'){
+      for (curr_map in 1:dim(zscore_map)[1]){
+        WriteVectorToGifti(metric_data = zscore_map[curr_map,],
+                           surf_template_file = as.character(ciftilist[1,1]),
+                           surf_command = surf_command,
+                           matlab_path = matlab_path,
+                           output_file = paste(output_directory,'/','zscore_map',curr_map,'.func.gii',sep=""))      
+      }       
+    } else
+    {
+      for (curr_map in 1:dim(zscore_map)[1]){
+        temp_map <- RevertVolume(zscore_map[curr_map,],cifti_dim)
+        cifti_file[] <- temp_map
+        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','zscore_map',curr_map,sep=""))
+      }      
+    }
     print("thresholding observed z scores")
     thresh_map <- t(sapply(1:nmeas,function(x) zscore_map[x,] > z_thresh))
-    save(thresh_map,file = "zscore_thresh_observed.Rdata")
+    thresh_map[is.na(thresh_map)] <- NaN
+    if (structtype == 'surface'){
+      for (curr_map in 1:dim(thresh_map)[1]){
+        WriteVectorToGifti(metric_data = thresh_map[curr_map,],
+                           surf_template_file = as.character(ciftilist[1,1]),
+                           surf_command = surf_command,
+                           matlab_path = matlab_path,
+                           output_file = paste(output_directory,'/','thresh_map',curr_map,'.func.gii',sep=""))      
+      }       
+    } else
+    {
+      for (curr_map in 1:dim(thresh_map)[1]){
+        temp_map <- RevertVolume(thresh_map[curr_map,],cifti_dim)
+        cifti_file[] <- temp_map
+        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','thresh_map',curr_map,sep=""))
+      }
+    }    
     finish_normthresh_time = proc.time() - start_normthresh_time    
     cat("thresholding complete. Time elapsed: ", finish_normthresh_time[3],"s")
   }
   print("performing cluster detection")
   start_clust_time = proc.time()
   if (sigtype == 'cluster'){
-    if (structtype == 'surface'){
-      all_cc = matrix(data=NA,nrow=Nelm,ncol=nmeas)     
-    } else 
-    {
-      all_cc = array(data=NA,dim=c(nmeas,cifti_dim))    
-      }
+    all_cc = matrix(data=NA,nrow=Nelm,ncol=nmeas)     
     for (curr_meas in 1:nmeas){
       thresh_array = unlist(thresh_map)
       mask_vector = 1:nmeas == curr_meas
@@ -151,14 +193,29 @@ ConstructMarginalModel <- function(external_df,
       if (structtype == 'volume'){
         thresh_vol <- RevertVolume(thresh_array,cifti_dim)
         observed_cc = GetVolAreas(thresh_vol)
-        all_cc[curr_meas,,,] = observed_cc
+        all_cc[,curr_meas] = ConvertVolume(observed_cc,cifti_dim)
       } else
       {
         observed_cc <- GetSurfAreas(thresh_array,structfile,matlab_path,surf_command)
         all_cc[,curr_meas] = observed_cc
       }
-      save(all_cc,file = "connected_components_observed.Rdata")
     }
+    if (structtype == 'surface'){
+      for (curr_map in 1:dim(all_cc)[2]){
+        WriteVectorToGifti(metric_data = all_cc[,curr_map],
+                           surf_template_file = as.character(ciftilist[1,1]),
+                           surf_command = surf_command,
+                           matlab_path = matlab_path,
+                           output_file = paste(output_directory,'/','observed_clusters',curr_map,'.func.gii',sep=""))      
+      }       
+    } else
+    {
+      for (curr_map in 1:dim(all_cc)[2]){
+        temp_map <- RevertVolume(all_cc[curr_map,],cifti_dim)
+        cifti_file[] <- temp_map
+        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','observed_clusters',curr_map,sep=""))
+      }
+    }      
     finish_clust_time = proc.time() - start_clust_time
     cat("cluster detection complete. Time elapsed", finish_clust_time[3],"s")
     print("performing permutation test")
@@ -190,29 +247,50 @@ ConstructMarginalModel <- function(external_df,
     finish_perm_time = proc.time() - start_perm_time
     cat("permutation testing complete. Time elapsed",finish_perm_time[3],"s")
     print("calculating p values for observed data using null distribution(s)")
-    if (structtype=='surface') {
-      for (curr_meas in 1:nmeas){
-        pval_map <- map(all_cc[,curr_meas],CalculatePvalue,WB_cc=WB_cc[curr_meas,],nboot=nboot,sigtype=sigtype)
-        if (curr_meas == 1){
-          all_maps = pval_map
-        } else
-        {
-          all_maps <- list(all_maps,pval_map)
-        }
-      }
-    } else 
-    {
-      all_maps = array(data=0,dim = c(nmeas,cifti_dim))
-      for (curr_meas in 1:nmeas){
-        pval_map <- apply(all_cc[curr_meas,,,],c(1,2,3),CalculatePvalue,WB_cc=WB_cc[curr_meas,],nboot=nboot,sigtype=sigtype)
-        all_maps[curr_meas,,,] <- pval_map
+    for (curr_meas in 1:nmeas){
+      pval_map <- map(all_cc[,curr_meas],CalculatePvalue,WB_cc=WB_cc[curr_meas,],nboot=nboot,sigtype=sigtype)
+      if (curr_meas == 1){
+        all_maps = pval_map
+      } else
+      {
+        all_maps <- list(all_maps,pval_map)
       }
     }
-    save(all_maps,file = "pval_maps.Rdata")    
+    if (structtype == 'surface'){
+      for (curr_map in 1:length(all_maps)){
+        WriteVectorToGifti(metric_data = unlist(all_maps[curr_map]),
+                           surf_template_file = as.character(ciftilist[1,1]),
+                           surf_command = surf_command,
+                           matlab_path = matlab_path,
+                           output_file = paste(output_directory,'/','observed_cluster_pval_',curr_map,'.func.gii',sep=""))      
+      }       
+    } else
+    {
+      for (curr_map in 1:length(all_maps)){
+        temp_map <- RevertVolume(unlist(all_maps[curr_map]),cifti_dim)
+        cifti_file[] <- temp_map
+        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','observed_cluster_pval_',curr_map,sep=""))
+      }
+    }  
   } else
   {
     all_maps <- map(zscore_map,CalculatePvalue,WB_cc=NaN,nboot=NaN,sigtype=sigtype)
-    save(all_maps,file = "pval_maps.Rdata")
+    if (structtype == 'surface'){
+      for (curr_map in 1:length(all_maps)){
+        WriteVectorToGifti(metric_data = unlist(all_maps[curr_map]),
+                           surf_template_file = as.character(ciftilist[1,1]),
+                           surf_command = surf_command,
+                           matlab_path = matlab_path,
+                           output_file = paste(output_directory,'/','observed_cluster_pval_',curr_map,'.func.gii',sep=""))      
+      }       
+    } else
+    {
+      for (curr_map in 1:length(all_maps)){
+        temp_map <- RevertVolume(unlist(all_maps[curr_map]),cifti_dim)
+        cifti_file[] <- temp_map
+        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','observed_cluster_pval_',curr_map,sep=""))
+      }
+    }  
   }
   setwd(curr_directory)
   all_time = proc.time() - initial_time

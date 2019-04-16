@@ -20,7 +20,8 @@ RecursiveNested <- function(iter,nests,nested,datavec,Sinit,residarray,Breadvec,
     I=(nests[iter]==nested)
     Ns=sum(I)
     # half of Meat times t(Breadvec)
-    if (adjustment == "HC2"){
+    if (is.null(adjustment)){
+    } else if (adjustment == "HC2"){
       hat_adjust <- diag(X[I,]%*%((t(X[I,])%*%X[I,])^-1)%*%t(X[I,]))
       residarray[I,] <- residarray[I,]/sqrt(1-hat_adjust)
     } else if (adjustment == "HC3"){

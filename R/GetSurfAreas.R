@@ -12,11 +12,12 @@
 #' @examples 
 #' component_sizes <- GetSurfAreas(metric_data,surf_file,matlab_path,surf_command)
 GetSurfAreas <- function(metric_data,surf_file,matlab_path,surf_command) {
+  run_surf_command = paste(surf_command,'/',"run_ComputeComponents.sh",sep="")
   metricchar <- shQuote(paste(c('[',metric_data,']'),collapse=" "))
   poss_args= c(matlab_path,
                surf_file,
                metricchar)
-  cluster_surf <- system2(surf_command,args=poss_args,stdout=TRUE)
+  cluster_surf <- system2(run_surf_command,args=poss_args,stdout=TRUE)
   cluster_num <- as.numeric(cluster_surf[(which(regexpr("dp_val",cluster_surf) > 0)+2):
                                            (which(regexpr("dp_val",cluster_surf) > 0)+32493)])
   return(cluster_num)
