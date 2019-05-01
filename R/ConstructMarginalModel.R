@@ -17,6 +17,13 @@
 #' @param nboot A numeric that represents the number of wild bootstraps to perform.
 #' @param p_thresh A numeric that represents the p value threshold for assessing significance.
 #' @param sigtype A character string denoting cluster ('cluster') or point ('point') comparisons.
+#' @param id_subjects A character string denoting the column for the subject ID. Only needed when FastSwE is FALSE
+#' @param output_directory A character string denoting the path to the output MRI statistical maps
+#' @param ncores An integer denoting the number of CPU cores to use when conducting permutation tests
+#' @param fastSWE A boolean that determine the sandwhich estimator approach. If set to FALSE, will use standard R package geeglm. If set to TRUE will use custom-built estimator using rfast.
+#' @param adjustment A character string denoting the small sample size adjustment to use when fastSwE is set to TRUE. Is NULL by default.
+#' @param norm_external_data A boolean. If set to true, external data will be normed prior to analysis.
+#' @param norm_internal_data A boolean. If set to true, MRI data will be normed per datapoint prior to analysis.
 #' @keywords wild bootstrap sandwich estimator marginal model CIFTI scalar
 #' @export
 #' @examples
@@ -42,7 +49,9 @@ ConstructMarginalModel <- function(external_df,
                                    output_directory='~/',
                                    ncores=1,
                                    fastSwE = TRUE,
-                                   adjustment = NULL){
+                                   adjustment = NULL,
+                                   norm_external_data = FALSE,
+                                   norm_internal_data = FALSE){
   initial_time = proc.time()
   require(purrr)
   require(cifti)
@@ -66,13 +75,24 @@ ConstructMarginalModel <- function(external_df,
     for (filename in ciftilist$file) {
       cifti_alldata[count,] = ConvertVolume(PrepVolMetric(as.character(ciftilist$file[count])),cifti_dim)
       count = count + 1
-    }
+    }      
     remove(count)
+    Nelm <- dim(cifti_alldata)[2]
+    if (norm_internal_data == TRUE){
+      for (count in 1:Nelm){
+        cifti_alldata[,count] <- (cifti_alldata[,count] - mean(cifti_alldata[,count]))/var(cifti_alldata[,count])    
+      }
+    }
     cifti_scalarmap <- as.data.frame(cifti_alldata)
   } else
   {
     cifti_alldata <- t(data.frame((lapply(as.character(ciftilist$file),PrepSurfMetric))))
     Nelm <- dim(cifti_alldata)[2]
+    if (norm_internal_data == TRUE){
+      for (curr_sub in 1:Nelm){
+        cifti_alldata[,curr_sub] <- (cifti_alldata[,curr_sub] - mean(cifti_alldata[,curr_sub]))/var(cifti_alldata[,curr_sub])        
+      }
+    }
     if (fastSwE == FALSE){
       cifti_index <- 1:length(cifti_alldata)
       cifti_scalarmap <- map(cifti_index,ReframeCIFTIdata,cifti_rawmeas=cifti_alldata)
@@ -83,7 +103,7 @@ ConstructMarginalModel <- function(external_df,
   if (is.character(external_df)) {
     external_df <- read.csv(external_df,header=TRUE)
     if (fastSwE == TRUE){
-      external_df <- ParseDf(external_df = external_df,notation = notation)
+      external_df <- ParseDf(external_df = external_df,notation = notation,norm_data=norm_external_data)
       nmeas <- dim(external_df)[2]
     }
   }
@@ -113,7 +133,7 @@ ConstructMarginalModel <- function(external_df,
     save(thresh_map,file = "zscore_thresh_observed.Rdata")
     finish_normthresh_time = proc.time() - start_normthresh_time
     cat("thresholding complete. Time elapsed: ", finish_normthresh_time[3],"s")
-    } else
+  } else
   {
     cifti_map <- lm.fit(external_df,cifti_alldata)
     beta_map <- cifti_map$coefficients
@@ -121,27 +141,28 @@ ConstructMarginalModel <- function(external_df,
     fit_map <- cifti_map$fitted.values
     Nelm <- dim(beta_map)[2]
     t_map <- ComputeFastSwE(X=external_df,nested=wave,Nelm=Nelm,resid_map=resid_map,npredictors=nmeas,beta_map=beta_map,adjustment=adjustment)
+    sqrt_tmap <- sqrt(abs(t_map))*sign(t_map)
     if (structtype == 'surface'){
-      for (curr_map in 1:dim(t_map)[1]){
-        WriteVectorToGifti(metric_data = t_map[curr_map,],
+      for (curr_map in 1:dim(sqrt_tmap)[1]){
+        WriteVectorToGifti(metric_data = sqrt_tmap[curr_map,],
                            surf_template_file = as.character(ciftilist[1,1]),
                            surf_command = surf_command,
                            matlab_path = matlab_path,
-                           output_file = paste(output_directory,'/','t_map',curr_map,'.func.gii',sep=""))      
+                           output_file = paste(output_directory,'/','sqrt_t_map',curr_map,'.func.gii',sep=""))      
       }       
     } else
     {
-      for (curr_map in 1:dim(t_map)[1]){
-        temp_map <- RevertVolume(t_map[curr_map,],cifti_dim)
+      for (curr_map in 1:dim(sqrt_map)[1]){
+        temp_map <- RevertVolume(sqrt_tmap[curr_map,],cifti_dim)
         cifti_file[] <- temp_map
-        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','t_map',curr_map,sep=""))
+        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','sqrt_t_map',curr_map,sep=""))
       }
     }
     finish_model_time = proc.time() - start_model_time
     cat("modeling complete. Time elapsed: ",finish_model_time[3],"s")
     start_normthresh_time = proc.time()
     print("Normalizing observed marginal model estimates")
-    zscore_map <- t(sapply(1:nmeas,function(x) {(t_map[x,] - mean(t_map[x,],na.rm=TRUE))/sd(t_map[x,],na.rm=TRUE)}))
+    zscore_map <- t(sapply(1:nmeas,function(x) {(sqrt_tmap[x,] - mean(sqrt_tmap[x,is.finite(sqrt_tmap[x,])]))/sd(sqrt_tmap[x,is.finite(sqrt_tmap[x,])])}))
     if (structtype == 'surface'){
       for (curr_map in 1:dim(zscore_map)[1]){
         WriteVectorToGifti(metric_data = zscore_map[curr_map,],
@@ -159,7 +180,7 @@ ConstructMarginalModel <- function(external_df,
       }      
     }
     print("thresholding observed z scores")
-    thresh_map <- t(sapply(1:nmeas,function(x) zscore_map[x,] > z_thresh))
+    thresh_map <- t(sapply(1:nmeas,function(x) abs(zscore_map[x,]) > z_thresh))
     thresh_map[is.na(thresh_map)] <- NaN
     if (structtype == 'surface'){
       for (curr_map in 1:dim(thresh_map)[1]){
@@ -223,26 +244,26 @@ ConstructMarginalModel <- function(external_df,
     seeds <- sample(.Machine$integer.max,size=nboot)
     cl <- makeForkCluster(nnodes = ncores)
     WB_cc <- parSapply(cl,1:nboot,ComputeMM_WB,resid_map=resid_map,
-                                        fit_map=fit_map,
-                                        type=dist_type,
-                                        external_df=external_df,
-                                        notation=notation,
-                                        family_dist=family_dist,
-                                        structtype=structtype,
-                                        thresh = z_thresh,
-                                        structfile=structfile,
-                                        matlab_path=matlab_path,
-                                        surf_command=surf_command,
-                                        corstr=corstr,
-                                        wave=wave,
-                                        zcor=zcor,
-                                        correctiontype = sigtype,
-                                        id_subjects=id_subjects,
-                                        cifti_dim=cifti_dim,
-                                        nmeas=nmeas,
-                                        seeds=seeds,
-                                        fastSwE=fastSwE,
-                                        adjustment=adjustment)
+                       fit_map=fit_map,
+                       type=dist_type,
+                       external_df=external_df,
+                       notation=notation,
+                       family_dist=family_dist,
+                       structtype=structtype,
+                       thresh = z_thresh,
+                       structfile=structfile,
+                       matlab_path=matlab_path,
+                       surf_command=surf_command,
+                       corstr=corstr,
+                       wave=wave,
+                       zcor=zcor,
+                       correctiontype = sigtype,
+                       id_subjects=id_subjects,
+                       cifti_dim=cifti_dim,
+                       nmeas=nmeas,
+                       seeds=seeds,
+                       fastSwE=fastSwE,
+                       adjustment=adjustment)
     stopCluster(cl)
     finish_perm_time = proc.time() - start_perm_time
     cat("permutation testing complete. Time elapsed",finish_perm_time[3],"s")

@@ -4,12 +4,14 @@
 \alias{ParseDf}
 \title{ParseDf -- a fast function to extract data from a data frame and convert to a design matrix. Used when fastSwE is set to true}
 \usage{
-ParseDf(external_df, notation)
+ParseDf(external_df, notation, norm_data)
 }
 \arguments{
 \item{external_df}{The data frame used to extract data}
 
 \item{notation}{The formula specified by the user}
+
+\item{norm_data}{A TRUE or FALSE flag. If set to TRUE will norm the data prior to processing.}
 }
 \description{
 This function is used to extract data from a data frame and convert to a design matrix. The matrix is then input into SwE for fast computations.

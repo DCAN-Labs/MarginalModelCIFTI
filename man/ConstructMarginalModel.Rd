@@ -8,7 +8,8 @@ ConstructMarginalModel(external_df, concfile, structtype, structfile,
   matlab_path, surf_command, wave = NULL, notation, zcor = NULL,
   corstr, family_dist, dist_type, z_thresh, nboot, p_thresh, sigtype,
   id_subjects = "subid", output_directory = "~/", ncores = 1,
-  fastSwE = TRUE, adjustment = NULL)
+  fastSwE = TRUE, adjustment = NULL, norm_external_data = FALSE,
+  norm_internal_data = FALSE)
 }
 \arguments{
 \item{external_df}{A data frame comprising non-brain measures to model. Can be specified as a string to a csv file with appropriate headers.}
@@ -42,6 +43,20 @@ ConstructMarginalModel(external_df, concfile, structtype, structfile,
 \item{p_thresh}{A numeric that represents the p value threshold for assessing significance.}
 
 \item{sigtype}{A character string denoting cluster ('cluster') or point ('point') comparisons.}
+
+\item{id_subjects}{A character string denoting the column for the subject ID. Only needed when FastSwE is FALSE}
+
+\item{output_directory}{A character string denoting the path to the output MRI statistical maps}
+
+\item{ncores}{An integer denoting the number of CPU cores to use when conducting permutation tests}
+
+\item{adjustment}{A character string denoting the small sample size adjustment to use when fastSwE is set to TRUE. Is NULL by default.}
+
+\item{norm_external_data}{A boolean. If set to true, external data will be normed prior to analysis.}
+
+\item{norm_internal_data}{A boolean. If set to true, MRI data will be normed per datapoint prior to analysis.}
+
+\item{fastSWE}{A boolean that determine the sandwhich estimator approach. If set to FALSE, will use standard R package geeglm. If set to TRUE will use custom-built estimator using rfast.}
 }
 \description{
 This function wraps all of the other functions in the MarginalModelCifti package. The output is a significance map, which is either uncorrected or cluster detection was performed.

@@ -112,7 +112,7 @@ ComputeMM_WB <- function(x,resid_map,
       fit_bootmap <- cifti_bootmap$fitted.values
       Nelm <- dim(cifti_bootscalarmap)[2]
       t_bootmap <- ComputeFastSwE(X=external_df,nested=wave,Nelm=Nelm,resid_map=resid_bootmap,npredictors=nmeas,beta_map=beta_bootmap,adjustment=adjustment)
-      zscore_bootmap <- t(sapply(1:nmeas,function(x) {(t_bootmap[x,] - mean(t_bootmap[x,],na.rm=TRUE))/sd(t_bootmap[x,],na.rm=TRUE)}))
+      zscore_bootmap <- t(sapply(1:nmeas,function(x) {(t_bootmap[x,] - mean(t_bootmap[x,is.finite(t_bootmap[x,])]))/sd(t_bootmap[x,is.finite(t_bootmap[x,])])}))
       thresh_bootmap <- t(sapply(1:nmeas,function(x) zscore_bootmap[x,] > z_thresh))
       print(unique(thresh_bootmap[1,]))
       print(unique(thresh_bootmap[2,]))
