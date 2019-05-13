@@ -31,6 +31,6 @@ RecursiveNested <- function(iter,nests,nested,datavec,Sinit,residarray,Breadvec,
     e = array(residarray[I,],c(1,Ns,datavec))
     Sinit[] = apply(e,3,function(x)x%*%t(Breadvec[,I]))
     Sb = Sb + array(apply(Sinit,3,function(x)t(x)%*%x),dim=c(npred,npred,datavec))
-    return(RecursiveNested(iter+1,nests,nested,datavec,Sinit,residarray,Breadvec,npred,Sb))
+    return(RecursiveNested(iter+1,nests,nested,datavec,Sinit,residarray,Breadvec,npred,adjustment,X,Sb))
   }
 }

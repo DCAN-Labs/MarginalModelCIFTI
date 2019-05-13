@@ -80,7 +80,9 @@ ConstructMarginalModel <- function(external_df,
     Nelm <- dim(cifti_alldata)[2]
     if (norm_internal_data == TRUE){
       for (count in 1:Nelm){
-        cifti_alldata[,count] <- (cifti_alldata[,count] - mean(cifti_alldata[,count]))/var(cifti_alldata[,count])    
+        if (var(cifti_alldata[,count]) != 0){ 
+          cifti_alldata[,count] <- ((cifti_alldata[,count] - mean(cifti_alldata[,count]))/sd(cifti_alldata[,count]))
+        }
       }
     }
     cifti_scalarmap <- as.data.frame(cifti_alldata)
@@ -88,9 +90,12 @@ ConstructMarginalModel <- function(external_df,
   {
     cifti_alldata <- t(data.frame((lapply(as.character(ciftilist$file),PrepSurfMetric))))
     Nelm <- dim(cifti_alldata)[2]
+    cifti_dim <- Nelm
     if (norm_internal_data == TRUE){
-      for (curr_sub in 1:Nelm){
-        cifti_alldata[,curr_sub] <- (cifti_alldata[,curr_sub] - mean(cifti_alldata[,curr_sub]))/var(cifti_alldata[,curr_sub])        
+      for (count in 1:Nelm){
+        if (var(cifti_alldata[,count]) != 0){ 
+          cifti_alldata[,count] <- ((cifti_alldata[,count] - mean(cifti_alldata[,count]))/sd(cifti_alldata[,count]))
+        }     
       }
     }
     if (fastSwE == FALSE){
@@ -141,28 +146,27 @@ ConstructMarginalModel <- function(external_df,
     fit_map <- cifti_map$fitted.values
     Nelm <- dim(beta_map)[2]
     t_map <- ComputeFastSwE(X=external_df,nested=wave,Nelm=Nelm,resid_map=resid_map,npredictors=nmeas,beta_map=beta_map,adjustment=adjustment)
-    sqrt_tmap <- sqrt(abs(t_map))*sign(t_map)
     if (structtype == 'surface'){
-      for (curr_map in 1:dim(sqrt_tmap)[1]){
-        WriteVectorToGifti(metric_data = sqrt_tmap[curr_map,],
+      for (curr_map in 1:dim(t_map)[1]){
+        WriteVectorToGifti(metric_data = t_map[curr_map,],
                            surf_template_file = as.character(ciftilist[1,1]),
                            surf_command = surf_command,
                            matlab_path = matlab_path,
-                           output_file = paste(output_directory,'/','sqrt_t_map',curr_map,'.func.gii',sep=""))      
+                           output_file = paste(output_directory,'/','t_map',curr_map,'.func.gii',sep=""))      
       }       
     } else
     {
-      for (curr_map in 1:dim(sqrt_map)[1]){
-        temp_map <- RevertVolume(sqrt_tmap[curr_map,],cifti_dim)
+      for (curr_map in 1:dim(t_map)[1]){
+        temp_map <- RevertVolume(t_map[curr_map,],cifti_dim)
         cifti_file[] <- temp_map
-        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','sqrt_t_map',curr_map,sep=""))
+        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','t_map',curr_map,sep=""))
       }
     }
     finish_model_time = proc.time() - start_model_time
     cat("modeling complete. Time elapsed: ",finish_model_time[3],"s")
     start_normthresh_time = proc.time()
     print("Normalizing observed marginal model estimates")
-    zscore_map <- t(sapply(1:nmeas,function(x) {(sqrt_tmap[x,] - mean(sqrt_tmap[x,is.finite(sqrt_tmap[x,])]))/sd(sqrt_tmap[x,is.finite(sqrt_tmap[x,])])}))
+    zscore_map <- t(sapply(1:nmeas,function(x) {(t_map[x,] - mean(t_map[x,is.finite(t_map[x,])]))/sd(t_map[x,is.finite(t_map[x,])])}))
     if (structtype == 'surface'){
       for (curr_map in 1:dim(zscore_map)[1]){
         WriteVectorToGifti(metric_data = zscore_map[curr_map,],

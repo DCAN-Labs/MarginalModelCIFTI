@@ -20,5 +20,6 @@ GetSurfAreas <- function(metric_data,surf_file,matlab_path,surf_command) {
   cluster_surf <- system2(run_surf_command,args=poss_args,stdout=TRUE)
   cluster_num <- as.numeric(cluster_surf[(which(regexpr("dp_val",cluster_surf) > 0)+2):
                                            (which(regexpr("dp_val",cluster_surf) > 0)+32493)])
+  clusters <- unique(cluster_num)[2:length(unique(cluster_num))]
   return(cluster_num)
 }

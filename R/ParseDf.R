@@ -12,10 +12,10 @@ ParseDf <- function(external_df,notation,norm_data){
   ncases <- dim(external_df)[1]
   predictors <- attr(terms(notation),"term.labels")
   if (norm_data==TRUE){
-    X <- cbind(rep(1,ncases),(external_df[[predictors[1]]] - mean(external_df[[predictors[1]]]))/var(external_df[[predictors[1]]]))
+    X <- cbind(rep(1,ncases),(external_df[[predictors[1]]] - mean(external_df[[predictors[1]]]))/sd(external_df[[predictors[1]]]))
     if (length(predictors) > 1){
       for (curr_pred in 2:length(predictors)){
-        X <- cbind(X,(external_df[[predictors[curr_pred]]] - mean(external_df[[predictors[curr_pred]]]))/var(external_df[[predictors[curr_pred]]]))
+        X <- cbind(X,(external_df[[predictors[curr_pred]]] - mean(external_df[[predictors[curr_pred]]]))/sd(external_df[[predictors[curr_pred]]]))
       }
     }    
   } else 
