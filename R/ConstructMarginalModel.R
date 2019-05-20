@@ -38,20 +38,22 @@ ConstructMarginalModel <- function(external_df,
                                    wave = NULL,
                                    notation,
                                    zcor = NULL,
-                                   corstr,
-                                   family_dist,
-                                   dist_type,
-                                   z_thresh,
-                                   nboot,
-                                   p_thresh,
-                                   sigtype,
+                                   corstr = NULL,
+                                   family_dist = NULL,
+                                   dist_type="radenbacher",
+                                   z_thresh = 2.3,
+                                   nboot=1000,
+                                   p_thresh = 0.5,
+                                   sigtype = 'cluster',
                                    id_subjects='subid',
                                    output_directory='~/',
                                    ncores=1,
                                    fastSwE = TRUE,
                                    adjustment = NULL,
-                                   norm_external_data = FALSE,
-                                   norm_internal_data = FALSE){
+                                   norm_external_data = TRUE,
+                                   norm_internal_data = TRUE,
+                                   marginal_outputs = FALSE,
+                                   marginal_matrix = NULL){
   initial_time = proc.time()
   require(purrr)
   require(cifti)
@@ -115,7 +117,7 @@ ConstructMarginalModel <- function(external_df,
   if (is.character(wave)) {
     print("loading longitudinal data")
     wave <- read.csv(wave,header=TRUE)
-    if (dim(wave)[2] > 1) wave <- DetermineNestedGroups(wave)
+    wave <- DetermineNestedGroups(wave)
   }
   finish_load_time = proc.time()-start_load_time
   cat("loading data complete. Time elapsed: ",finish_load_time[3],"s")  
@@ -142,6 +144,28 @@ ConstructMarginalModel <- function(external_df,
   {
     cifti_map <- lm.fit(external_df,cifti_alldata)
     beta_map <- cifti_map$coefficients
+    if (marginal_outputs == TRUE){
+      marginal_map = array(data = 0, dim = c(dim(marginal_matrix)[1],dim(beta_map)[2]))
+      for (curr_marginal in 1:dim(marginal_matrix)[1]){
+        marginal_map[curr_marginal,] <- sapply(1:dim(beta_map)[2],function(x){CalculateMarginalValue(beta_map[,x],marginal_matrix[curr_marginal,])})
+      }
+      if (structtype == 'surface'){
+        for (curr_map in 1:dim(marginal_map)[1]){
+          WriteVectorToGifti(metric_data = marginal_map[curr_map,],
+                             surf_template_file = as.character(ciftilist[1,1]),
+                             surf_command = surf_command,
+                             matlab_path = matlab_path,
+                             output_file = paste(output_directory,'/','marginal_map',curr_map,'.func.gii',sep=""))      
+        }       
+      } else
+      {
+        for (curr_map in 1:dim(marginal_map)[1]){
+          temp_map <- RevertVolume(marginal_map[curr_map,],cifti_dim)
+          cifti_file[] <- temp_map
+          writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','marginal_map',curr_map,sep=""))
+        }
+      }     
+    }
     resid_map <- cifti_map$residuals
     fit_map <- cifti_map$fitted.values
     Nelm <- dim(beta_map)[2]

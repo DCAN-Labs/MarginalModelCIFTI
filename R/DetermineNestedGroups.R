@@ -20,7 +20,7 @@ DetermineNestedGroups <- function(wave) {
     final_wave <- as.numeric(factor(pasted_wave))
   } else
   {
-    final_wave <- as.numeric(factor(wave))
+    final_wave <- as.numeric(factor(wave[,1]))
   }
   return(final_wave)
 }

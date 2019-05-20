@@ -6,10 +6,13 @@
 \usage{
 ConstructMarginalModel(external_df, concfile, structtype, structfile,
   matlab_path, surf_command, wave = NULL, notation, zcor = NULL,
-  corstr, family_dist, dist_type, z_thresh, nboot, p_thresh, sigtype,
-  id_subjects = "subid", output_directory = "~/", ncores = 1,
-  fastSwE = TRUE, adjustment = NULL, norm_external_data = FALSE,
-  norm_internal_data = FALSE)
+  corstr = NULL, family_dist = NULL, dist_type = "radenbacher",
+  z_thresh = 2.3, nboot = 1000, p_thresh = 0.5,
+  sigtype = "cluster", id_subjects = "subid",
+  output_directory = "~/", ncores = 1, fastSwE = TRUE,
+  adjustment = NULL, norm_external_data = TRUE,
+  norm_internal_data = TRUE, marginal_outputs = FALSE,
+  marginal_matrix = NULL)
 }
 \arguments{
 \item{external_df}{A data frame comprising non-brain measures to model. Can be specified as a string to a csv file with appropriate headers.}
