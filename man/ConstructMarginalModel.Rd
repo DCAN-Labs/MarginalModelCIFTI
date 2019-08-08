@@ -12,14 +12,15 @@ ConstructMarginalModel(external_df, concfile, structtype, structfile,
   output_directory = "~/", ncores = 1, fastSwE = TRUE,
   adjustment = NULL, norm_external_data = TRUE,
   norm_internal_data = TRUE, marginal_outputs = FALSE,
-  marginal_matrix = NULL)
+  marginal_matrix = NULL, enrichment_path = NULL, modules = NULL,
+  wb_command = "wb_command")
 }
 \arguments{
 \item{external_df}{A data frame comprising non-brain measures to model. Can be specified as a string to a csv file with appropriate headers.}
 
 \item{concfile}{A character string denoting a single column text file that lists the dscalars in the same order as the external_df and wave frames.}
 
-\item{structtype}{A character string denoting whether the map is volumetric ('volume') or surface-based.}
+\item{structtype}{A character string denoting whether the map is volumetric ('volume'), surface-based ('surface'), or a pconn ('pconn').}
 
 \item{structfile}{A character string denoting the structural map file, used for cluster detection on surfaces only.}
 
@@ -45,7 +46,7 @@ ConstructMarginalModel(external_df, concfile, structtype, structfile,
 
 \item{p_thresh}{A numeric that represents the p value threshold for assessing significance.}
 
-\item{sigtype}{A character string denoting cluster ('cluster') or point ('point') comparisons.}
+\item{sigtype}{A character string denoting cluster ('cluster'),  point ('point'), or enrichment ('enrichment') comparisons.}
 
 \item{id_subjects}{A character string denoting the column for the subject ID. Only needed when FastSwE is FALSE}
 
@@ -59,6 +60,16 @@ ConstructMarginalModel(external_df, concfile, structtype, structfile,
 
 \item{norm_internal_data}{A boolean. If set to true, MRI data will be normed per datapoint prior to analysis.}
 
+\item{marginal_outputs}{A boolean. If set to true, marginal values will be output as statistical maps}
+
+\item{marginal_matrix}{A numeric matrix depicting how to draw the map. Only needed if marginal_outputs is set to TRUE}
+
+\item{enrichment_path}{A string depicting the path to the enrichment code. Used for enrichment analysis only (i.e. when sigtype is set to 'enrichment').}
+
+\item{modules}{A csv file or array that depicts the modules for the enrichment analysis.}
+
+\item{wb_command}{A character string denoting the path to the wb_command file}
+
 \item{fastSWE}{A boolean that determine the sandwhich estimator approach. If set to FALSE, will use standard R package geeglm. If set to TRUE will use custom-built estimator using rfast.}
 }
 \description{
@@ -68,11 +79,3 @@ This function wraps all of the other functions in the MarginalModelCifti package
 max_cc <- ComputeMM_WB(cifti_map,zscore_map,resid_map,fit_map,type,external_df,
 notation,family_dist,structtype,thresh,structfile,matlab_path,surf_command,correctiontype)
 }
-\keyword{CIFTI}
-\keyword{bootstrap}
-\keyword{estimator}
-\keyword{marginal}
-\keyword{model}
-\keyword{sandwich}
-\keyword{scalar}
-\keyword{wild}

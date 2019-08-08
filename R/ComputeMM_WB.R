@@ -39,7 +39,10 @@ ComputeMM_WB <- function(x,resid_map,
                          nmeas,
                          seeds,
                          fastSwE,
-                         adjustment) {
+                         adjustment,                       
+                         enrichment_path = NULL,
+                         modules = NULL,
+                         cifti_firstsub = NULL) {
   require(purrr)
   require(cifti)
   require(gifti)
@@ -139,5 +142,26 @@ ComputeMM_WB <- function(x,resid_map,
       all_cc[curr_meas] = max(cc,na.rm=TRUE)
     }
       return(all_cc)
+  }
+  else if (correctiontype == 'enrichment'){
+    all_cc = list(1:nmeas)
+    for (curr_meas in 1:nmeas){
+      thresh_bootarray = unlist(thresh_bootmap)
+      mask_bootvector = 1:nmeas == curr_meas
+      thresh_bootarray <- thresh_bootarray[mask_bootvector]
+      thresh_bootarray <- as.numeric(thresh_bootarray)
+      print(unique(thresh_bootarray))
+      thresh_bootarray[is.na(thresh_bootarray)] <-  0
+      thresh_bootmat <- Matrix2Vector(pconn_data=cifti_firstsub,
+                                pconn_vector = thresh_bootarray,
+                                direction = "to_matrix")
+      boot_cc <- EnrichmentAnalysis(metric_data = thresh_bootmat,
+                                      ncols = dim(thresh_bootmat)[1],
+                                      modules = modules, 
+                                      enrichment_path = enrichment_path,
+                                      matlab_path = matlab_path,
+                                      output_file = paste(output_directory,'/','boot_chisqrd',curr_map,sep=""))
+      all_cc[curr_meas] = max(boot_cc,na.rm=TRUE)                              
+  }
   }
 }
