@@ -9,15 +9,16 @@
 #' @param matlab_path A character string representing the path to the matlab compiler
 #' @param enrichment_path A character string representing the path to the compiled enrichment folder
 #' @param output_file A character string representing the path to the output chisquared file
+#' @param tempname A character string representing the path and prefix for temporary files, critical for parallel processing
 #' @keywords surface cluster
 #' @export
 #' @examples 
-#' WriteMatrixToCifti(metric_data,ncols,surf_template_file,matlab_path,enrichment_path,output_file)
-EnrichmentAnalysis <- function(metric_data,ncols,modules,matlab_path,enrichment_path,output_file) {
+#' WriteMatrixToCifti(metric_data,ncols,surf_template_file,matlab_path,enrichment_path,output_file,tempname)
+EnrichmentAnalysis <- function(metric_data,ncols,modules,matlab_path,enrichment_path,output_file,tempname) {
   run_gifti_command = paste(enrichment_path,'/',"run_CountSignificantEffectsByModules.sh",sep="")
-  temp_text_file_m = paste(getwd(),'/temp_m.txt',sep='')
-  modules_data = read.csv(file = modules,header=TRUE,sep = '')
-  temp_text_file_modules = paste(getwd(),'/temp_modules.txt',sep='')
+  temp_text_file_m = paste(tempname,'temp_m.txt',sep='_')
+  modules_data = read.csv(file = modules,header=TRUE,sep = ',')
+  temp_text_file_modules = paste(tempname,'temp_modules.txt',sep='_')
   write(as.numeric(metric_data),temp_text_file_m,ncolumns=ncols)
   write(as.numeric(unlist(modules_data)),temp_text_file_modules,ncolumns = 1)
   poss_args= c(matlab_path,
@@ -26,6 +27,6 @@ EnrichmentAnalysis <- function(metric_data,ncols,modules,matlab_path,enrichment_
                'ExportText',
                output_file)
   system2(run_gifti_command,args=poss_args)
-  chi2_mat <- read.csv(output_file,sep = " ",header=FALSE)
+  chi2_mat <- read.csv(output_file,sep = ",",header=FALSE)
   return(chi2_mat)
 }

@@ -13,7 +13,7 @@ Matrix2Vector <- function(pconn_data=NULL,pconn_vector=NULL,direction="to_vector
   if(direction=="to_matrix"){
     data_out <- pconn_data
     data_out[upper.tri(data_out)] <- pconn_vector
-    data_out[lower.tri(data_out)] <- t(data_out[lower.tri(data_out)])
+    data_out[lower.tri(data_out)] <- t(data_out[upper.tri(data_out)])
   } else
   {
     data_out <- pconn_data[upper.tri(pconn_data)]

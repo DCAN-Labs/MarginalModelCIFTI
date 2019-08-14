@@ -73,6 +73,7 @@ ConstructMarginalModel <- function(external_df,
   require(parallel)
   require(Rfast)
   cifti_firstsub= NULL
+  zeros_array = NULL
   curr_directory = getwd()
   setwd(output_directory)
   ciftilist <- read.csv(concfile,header=FALSE,col.names="file")
@@ -89,6 +90,8 @@ ConstructMarginalModel <- function(external_df,
     }      
     remove(count)
     Nelm <- dim(cifti_alldata)[2]
+    cifti_nonans <- sapply(1:dim(cifti_alldata)[1],function(x){ sum(is.na(cifti_alldata[x,]))==0})
+    cifti_alldata <- cifti_alldata[cifti_nonans,]    
     if (norm_internal_data == TRUE){
       for (count in 1:Nelm){
         if (var(cifti_alldata[,count]) != 0){ 
@@ -102,6 +105,8 @@ ConstructMarginalModel <- function(external_df,
     cifti_alldata <- t(data.frame((lapply(as.character(ciftilist$file),PrepSurfMetric))))
     Nelm <- dim(cifti_alldata)[2]
     cifti_dim <- Nelm
+    cifti_nonans <- sapply(1:dim(cifti_alldata)[1],function(x){ sum(is.na(cifti_alldata[x,]))==0})
+    cifti_alldata <- cifti_alldata[cifti_nonans,]    
     if (norm_internal_data == TRUE){
       for (count in 1:Nelm){
         if (var(cifti_alldata[,count]) != 0){ 
@@ -118,6 +123,7 @@ ConstructMarginalModel <- function(external_df,
  if (structtype == 'pconn') {
    cifti_firstsub <- PrepCIFTI(as.character(ciftilist$file[1]))
    cifti_alldata <- array(data = NA, dim = c(length(ciftilist$file),dim(cifti_firstsub)[1]*(dim(cifti_firstsub)[1]-1)/2))
+   zeros_array <- array(data=0,dim = c(dim(cifti_firstsub)[1],dim(cifti_firstsub)[2]))
    count = 1
    for (filename in ciftilist$file) { 
      cifti_temp <- PrepCIFTI(as.character(filename))
@@ -126,9 +132,11 @@ ConstructMarginalModel <- function(external_df,
    }
    Nelm <- dim(cifti_alldata)[2]
    cifti_dim <- Nelm
+   cifti_nonans <- sapply(1:dim(cifti_alldata)[1],function(x){ sum(is.na(cifti_alldata[x,]))==0})
+   cifti_alldata <- cifti_alldata[cifti_nonans,]
    if (norm_internal_data == TRUE){
      for (count in 1:Nelm){
-       if (var(cifti_alldata[,count]) != 0){ 
+       if (var(cifti_alldata[,count]) != 0) { 
          cifti_alldata[,count] <- ((cifti_alldata[,count] - mean(cifti_alldata[,count]))/sd(cifti_alldata[,count]))
        }     
      }
@@ -138,6 +146,7 @@ ConstructMarginalModel <- function(external_df,
   print("loading non-imaging data")
   if (is.character(external_df)) {
     external_df <- read.csv(external_df,header=TRUE)
+    external_df <- external_df[cifti_nonans,]
     df_nan <- FilterDFNA(external_df = external_df,notation = notation)
     external_df = external_df[df_nan,]
     cifti_scalarmap = cifti_scalarmap[df_nan,]
@@ -151,6 +160,7 @@ ConstructMarginalModel <- function(external_df,
     print("loading longitudinal data")
     wave <- read.csv(wave,header=TRUE)
     wave <- DetermineNestedGroups(wave)
+    wave = wave[cifti_nonans]
     wave = wave[df_nan]
   }
   finish_load_time = proc.time()-start_load_time
@@ -201,7 +211,7 @@ ConstructMarginalModel <- function(external_df,
       }
       if (structtype == 'pconn'){
         for (curr_map in 1:dim(marginal_map)[1]){
-          temp_mat <- Matrix2Vector(pconn_data = cifti_firstsub,
+          temp_mat <- Matrix2Vector(pconn_data = zeros_array,
                                     pconn_vector = marginal_map[curr_map,],
                                     direction = "to_matrix")
           WriteMatrixToCifti(metric_data = temp_mat,
@@ -236,7 +246,7 @@ ConstructMarginalModel <- function(external_df,
     }
     if (structtype == 'pconn'){
       for (curr_map in 1:dim(t_map)[1]){
-        temp_mat <- Matrix2Vector(pconn_data = cifti_firstsub,
+        temp_mat <- Matrix2Vector(pconn_data = zeros_array,
                                   pconn_vector = t_map[curr_map,],
                                   direction = "to_matrix")
         WriteMatrixToCifti(metric_data = temp_mat,
@@ -272,7 +282,7 @@ ConstructMarginalModel <- function(external_df,
     }
     if (structtype == 'pconn'){
       for (curr_map in 1:dim(zscore_map)[1]){
-        temp_mat <- Matrix2Vector(pconn_data = cifti_firstsub,
+        temp_mat <- Matrix2Vector(pconn_data = zeros_array,
                                   pconn_vector = zscore_map[curr_map,],
                                   direction = "to_matrix")
         WriteMatrixToCifti(metric_data = temp_mat,
@@ -305,7 +315,7 @@ ConstructMarginalModel <- function(external_df,
     }
     if (structtype == 'pconn'){
       for (curr_map in 1:dim(thresh_map)[1]){
-        temp_mat <- Matrix2Vector(pconn_data = cifti_firstsub,
+        temp_mat <- Matrix2Vector(pconn_data = zeros_array,
                                   pconn_vector = thresh_map[curr_map,],
                                   direction = "to_matrix")
         WriteMatrixToCifti(metric_data = temp_mat,
@@ -364,7 +374,7 @@ ConstructMarginalModel <- function(external_df,
         thresh_array <- thresh_array[mask_vector]
         thresh_array <- as.numeric(thresh_array)
         thresh_array[is.na(thresh_array)] <-  0
-        thresh_mat <- Matrix2Vector(pconn_data=cifti_firstsub,
+        thresh_mat <- Matrix2Vector(pconn_data = zeros_array,
                                     pconn_vector = thresh_array,
                                     direction = "to_matrix")
         observed_cc <- EnrichmentAnalysis(metric_data = thresh_mat,
@@ -372,11 +382,12 @@ ConstructMarginalModel <- function(external_df,
                                           modules = modules, 
                                           enrichment_path = enrichment_path,
                                           matlab_path = matlab_path,
-                                          output_file = paste(output_directory,'/','observed_chisqrd',curr_map,sep=""))
+                                          output_file = paste(output_directory,'/','observed_chisqrd',curr_map,sep=""),
+                                          tempname=paste(output_directory,'/','observed',curr_map,sep=""))
       if (curr_meas == 1) {
         all_cc = array(data=NA,dim=c(dim(observed_cc)[1],dim(observed_cc)[2],nmeas)) 
       }
-      all_cc[,,curr_meas] <- observed_cc
+      all_cc[,,curr_meas] <- unlist(observed_cc)
       }
     }
     finish_clust_time = proc.time() - start_clust_time
@@ -406,9 +417,9 @@ ConstructMarginalModel <- function(external_df,
                        seeds=seeds,
                        fastSwE=fastSwE,
                        adjustment=adjustment,
-                       enrichment_path = NULL,
-                       modules = NULL,
-                       cifti_firstsub = cifti_firstsub)
+                       enrichment_path = enrichment_path,
+                       modules = modules,
+                       cifti_firstsub = zeros_array)
     stopCluster(cl)
     finish_perm_time = proc.time() - start_perm_time
     cat("permutation testing complete. Time elapsed",finish_perm_time[3],"s")

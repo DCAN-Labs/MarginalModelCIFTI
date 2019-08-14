@@ -5,7 +5,7 @@
 \title{WriteMatrixToCifti -- Output an R array matrix into an appropriate CIFTI format}
 \usage{
 EnrichmentAnalysis(metric_data, ncols, modules, matlab_path,
-  enrichment_path, output_file)
+  enrichment_path, output_file, tempname)
 }
 \arguments{
 \item{metric_data}{A binarized matrix}
@@ -19,6 +19,8 @@ EnrichmentAnalysis(metric_data, ncols, modules, matlab_path,
 \item{enrichment_path}{A character string representing the path to the compiled enrichment folder}
 
 \item{output_file}{A character string representing the path to the output chisquared file}
+
+\item{tempname}{A character string representing the path and prefix for temporary files, critical for parallel processing}
 }
 \description{
 This function will write an R data matrix as a CIFTI pconn file, properly indexed.
@@ -26,7 +28,7 @@ Unfortunately, this function requires a compiled matlab package, SurfConnectivit
 Contact Eric Feczko to get the package.
 }
 \examples{
-WriteMatrixToCifti(metric_data,ncols,surf_template_file,matlab_path,enrichment_path,output_file)
+WriteMatrixToCifti(metric_data,ncols,surf_template_file,matlab_path,enrichment_path,output_file,tempname)
 }
 \keyword{cluster}
 \keyword{surface}

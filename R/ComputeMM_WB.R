@@ -144,6 +144,7 @@ ComputeMM_WB <- function(x,resid_map,
       return(all_cc)
   }
   else if (correctiontype == 'enrichment'){
+    cat('running enrichment')
     all_cc = list(1:nmeas)
     for (curr_meas in 1:nmeas){
       thresh_bootarray = unlist(thresh_bootmap)
@@ -160,7 +161,8 @@ ComputeMM_WB <- function(x,resid_map,
                                       modules = modules, 
                                       enrichment_path = enrichment_path,
                                       matlab_path = matlab_path,
-                                      output_file = paste(output_directory,'/','boot_chisqrd',curr_map,sep=""))
+                                      output_file = paste(output_directory,'/','boot_chisqrd',curr_meas,x,sep=""),
+                                      tempname=paste(output_directory,'/','boot',curr_meas,x,sep=""))
       all_cc[curr_meas] = max(boot_cc,na.rm=TRUE)                              
   }
   }
