@@ -22,6 +22,9 @@
 # ii) go into CommunityChisquared folder `cd ~/CommunityChiSquaredAnalysis`
 # iii) clone the CommunityChiSquared repostory here `git clone https://github.com/DCAN-Labs/CommunityChiSquaredAnalysis.git ./`
 
+# To run this package on a cluster, e.g. slurm, one can use Rscript to call this script:
+# srun -t 36:00:00 -c 12 --mem-per-cpu=8GB -e /path/to/log.err -o /path/to/log.out Rscript /path/to/parameter_script.R
+
 ### Call the MarginalModelCifti library -- if this errors you will need to install it using devtools
 
 library(MarginalModelCifti)
