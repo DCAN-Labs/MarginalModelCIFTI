@@ -465,7 +465,7 @@ ConstructMarginalModel <- function(external_df,
         writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','observed_cluster_pval_',curr_map,sep=""))
       }
     }  
-    if (structtype == 'enrichment') {
+    if (structtype == 'pconn') {
       for (curr_map in 1:length(all_maps))
         write.csv(unlist(all_maps[curr_map]),file = paste(output_directory,'/','observed_cluster_pval_',curr_map,sep=""))
     }
