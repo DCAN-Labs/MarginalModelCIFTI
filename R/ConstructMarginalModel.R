@@ -151,6 +151,8 @@ ConstructMarginalModel <- function(external_df,
     external_df = external_df[df_nan,]
     cifti_scalarmap = cifti_scalarmap[df_nan,]
     cifti_alldata = cifti_alldata[df_nan,]
+    predictors <- attr(terms(notation),"term.labels")
+    measnames <- c("intercept",predictors)    
     if (fastSwE == TRUE){
       external_df <- ParseDf(external_df = external_df,notation = notation,norm_data=norm_external_data)
       nmeas <- dim(external_df)[2]
@@ -199,14 +201,14 @@ ConstructMarginalModel <- function(external_df,
                              surf_template_file = as.character(ciftilist[1,1]),
                              surf_command = surf_command,
                              matlab_path = matlab_path,
-                             output_file = paste(output_directory,'/','marginal_map',curr_map,'.func.gii',sep=""))      
+                             output_file = paste(output_directory,'/','marginal_map_',measnames[curr_map],'.func.gii',sep=""))      
         }       
       } 
       if (structtype == 'volume') {
         for (curr_map in 1:dim(marginal_map)[1]){
           temp_map <- RevertVolume(marginal_map[curr_map,],cifti_dim)
           cifti_file[] <- temp_map
-          writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','marginal_map',curr_map,sep=""))
+          writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','marginal_map_',measnames[curr_map],sep=""))
         }
       }
       if (structtype == 'pconn'){
@@ -219,7 +221,7 @@ ConstructMarginalModel <- function(external_df,
                              surf_template_file = as.character(ciftilist$file[1],),
                              matlab_path = matlab_path,
                              surf_command = surf_command,
-                             output_file = paste(output_directory,'/','marginal_map',curr_map,sep=""),
+                             output_file = paste(output_directory,'/','marginal_map_',measnames[curr_map],sep=""),
                              wb_command = wb_command)
         }
       }
@@ -234,14 +236,14 @@ ConstructMarginalModel <- function(external_df,
                            surf_template_file = as.character(ciftilist[1,1]),
                            surf_command = surf_command,
                            matlab_path = matlab_path,
-                           output_file = paste(output_directory,'/','t_map',curr_map,'.func.gii',sep=""))      
+                           output_file = paste(output_directory,'/','t_map_',measnames[curr_map],'.func.gii',sep=""))      
       }       
     } else
     if (structtype == 'volume'){
       for (curr_map in 1:dim(t_map)[1]){
         temp_map <- RevertVolume(t_map[curr_map,],cifti_dim)
         cifti_file[] <- temp_map
-        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','t_map',curr_map,sep=""))
+        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','t_map_',measnames[curr_map],sep=""))
       }
     }
     if (structtype == 'pconn'){
@@ -254,7 +256,7 @@ ConstructMarginalModel <- function(external_df,
                            surf_template_file = as.character(ciftilist$file[1]),
                            matlab_path = matlab_path,
                            surf_command = surf_command,
-                           output_file = paste(output_directory,'/','t_map',curr_map,sep=""),
+                           output_file = paste(output_directory,'/','t_map_',measnames[curr_map],sep=""),
                            wb_command = wb_command)
       }
     }
@@ -270,14 +272,14 @@ ConstructMarginalModel <- function(external_df,
                            surf_template_file = as.character(ciftilist[1,1]),
                            surf_command = surf_command,
                            matlab_path = matlab_path,
-                           output_file = paste(output_directory,'/','zscore_map',curr_map,'.func.gii',sep=""))      
+                           output_file = paste(output_directory,'/','zscore_map_',measnames[curr_map],'.func.gii',sep=""))      
       }       
     }
     if (structtype == 'volume') {
       for (curr_map in 1:dim(zscore_map)[1]){
         temp_map <- RevertVolume(zscore_map[curr_map,],cifti_dim)
         cifti_file[] <- temp_map
-        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','zscore_map',curr_map,sep=""))
+        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','zscore_map_',measnames[curr_map],sep=""))
       }      
     }
     if (structtype == 'pconn'){
@@ -290,7 +292,7 @@ ConstructMarginalModel <- function(external_df,
                            surf_template_file = as.character(ciftilist$file[1]),
                            matlab_path = matlab_path,
                            surf_command = surf_command,
-                           output_file = paste(output_directory,'/','zscore_map',curr_map,sep=""),
+                           output_file = paste(output_directory,'/','zscore_map_',measnames[curr_map],sep=""),
                            wb_command = wb_command)
       }
     }    
@@ -303,14 +305,14 @@ ConstructMarginalModel <- function(external_df,
                            surf_template_file = as.character(ciftilist[1,1]),
                            surf_command = surf_command,
                            matlab_path = matlab_path,
-                           output_file = paste(output_directory,'/','thresh_map',curr_map,'.func.gii',sep=""))      
+                           output_file = paste(output_directory,'/','thresh_map_',measnames[curr_map],'.func.gii',sep=""))      
       }       
     }
     if (structtype == 'volume'){
       for (curr_map in 1:dim(thresh_map)[1]){
         temp_map <- RevertVolume(thresh_map[curr_map,],cifti_dim)
         cifti_file[] <- temp_map
-        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','thresh_map',curr_map,sep=""))
+        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','thresh_map_',measnames[curr_map],sep=""))
       }
     }
     if (structtype == 'pconn'){
@@ -323,7 +325,7 @@ ConstructMarginalModel <- function(external_df,
                            surf_template_file = as.character(ciftilist$file[1]),
                            matlab_path = matlab_path,
                            surf_command = surf_command,
-                           output_file = paste(output_directory,'/','tresh_map',curr_map,sep=""),
+                           output_file = paste(output_directory,'/','tresh_map_',measnames[curr_map],sep=""),
                            wb_command = wb_command)
       }
     }
@@ -356,14 +358,14 @@ ConstructMarginalModel <- function(external_df,
                            surf_template_file = as.character(ciftilist[1,1]),
                            surf_command = surf_command,
                            matlab_path = matlab_path,
-                           output_file = paste(output_directory,'/','observed_clusters',curr_map,'.func.gii',sep=""))      
+                           output_file = paste(output_directory,'/','observed_clusters_',measnames[curr_map],'.func.gii',sep=""))      
       }       
     } else
     {
       for (curr_map in 1:dim(all_cc)[2]){
         temp_map <- RevertVolume(all_cc[curr_map,],cifti_dim)
         cifti_file[] <- temp_map
-        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','observed_clusters',curr_map,sep=""))
+        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','observed_clusters_',measnames[curr_map],sep=""))
       }
     }
   }
@@ -382,8 +384,8 @@ ConstructMarginalModel <- function(external_df,
                                           modules = modules, 
                                           enrichment_path = enrichment_path,
                                           matlab_path = matlab_path,
-                                          output_file = paste(output_directory,'/','observed_chisqrd',curr_meas,sep=""),
-                                          tempname=paste(output_directory,'/','observed',curr_meas,sep=""))
+                                          output_file = paste(output_directory,'/','observed_chisqrd_',measnames[curr_meas],sep=""),
+                                          tempname=paste(output_directory,'/','observed_',measnames[curr_meas],sep=""))
       if (curr_meas == 1) {
         all_cc = array(data=NA,dim=c(dim(observed_cc)[1],dim(observed_cc)[2],nmeas)) 
       }
@@ -455,19 +457,19 @@ ConstructMarginalModel <- function(external_df,
                            surf_template_file = as.character(ciftilist[1,1]),
                            surf_command = surf_command,
                            matlab_path = matlab_path,
-                           output_file = paste(output_directory,'/','observed_cluster_pval_',curr_map,'.func.gii',sep=""))      
+                           output_file = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],'.func.gii',sep=""))      
       }       
     }
     if (structtype == 'volume') {
       for (curr_map in 1:length(all_maps)){
         temp_map <- RevertVolume(unlist(all_maps[curr_map]),cifti_dim)
         cifti_file[] <- temp_map
-        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','observed_cluster_pval_',curr_map,sep=""))
+        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
       }
     }  
     if (structtype == 'pconn') {
       for (curr_map in 1:length(all_maps))
-        write.csv(unlist(all_maps[curr_map]),file = paste(output_directory,'/','observed_cluster_pval_',curr_map,sep=""))
+        write.csv(unlist(all_maps[curr_map]),file = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
     }
   setwd(curr_directory)
   all_time = proc.time() - initial_time
