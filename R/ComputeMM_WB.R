@@ -163,7 +163,8 @@ ComputeMM_WB <- function(x,resid_map,
                                       matlab_path = matlab_path,
                                       output_file = paste(output_directory,'/','boot_chisqrd',curr_meas,x,sep=""),
                                       tempname=paste(output_directory,'/','boot',curr_meas,x,sep=""))
-      all_cc[curr_meas] = max(boot_cc,na.rm=TRUE)                              
+      all_cc[curr_meas] = max(boot_cc,na.rm=TRUE)
+      file.remove(paste(output_directory,'/','boot_chisqrd',curr_meas,x,sep=""))
   }
   }
 }

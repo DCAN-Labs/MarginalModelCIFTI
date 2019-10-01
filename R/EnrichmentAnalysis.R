@@ -28,5 +28,7 @@ EnrichmentAnalysis <- function(metric_data,ncols,modules,matlab_path,enrichment_
                output_file)
   system2(run_gifti_command,args=poss_args)
   chi2_mat <- read.csv(output_file,sep = ",",header=FALSE)
+  file.remove(temp_text_file_m)
+  file.remove(temp_text_file_modules)
   return(chi2_mat)
 }

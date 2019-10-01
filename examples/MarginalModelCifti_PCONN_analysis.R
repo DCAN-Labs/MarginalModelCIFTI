@@ -126,7 +126,7 @@ id_subjects="subjectkey"
 ### Set the below variable `output_directory` to where you want to save your outputs
 
 
-output_directory="/mnt/rose/shared/projects/ABCD/avg_pconn_maker/cordova_analysis_margmod_pcs/pc2_gp1_test"
+output_directory="/mnt/rose/shared/projects/ABCD/avg_pconn_maker/mmc_pconn_demo"
 
 ### Set the below variable `ncores` to how many CPUs to run permutation testing in parallel
 

@@ -382,8 +382,8 @@ ConstructMarginalModel <- function(external_df,
                                           modules = modules, 
                                           enrichment_path = enrichment_path,
                                           matlab_path = matlab_path,
-                                          output_file = paste(output_directory,'/','observed_chisqrd',curr_map,sep=""),
-                                          tempname=paste(output_directory,'/','observed',curr_map,sep=""))
+                                          output_file = paste(output_directory,'/','observed_chisqrd',curr_meas,sep=""),
+                                          tempname=paste(output_directory,'/','observed',curr_meas,sep=""))
       if (curr_meas == 1) {
         all_cc = array(data=NA,dim=c(dim(observed_cc)[1],dim(observed_cc)[2],nmeas)) 
       }
