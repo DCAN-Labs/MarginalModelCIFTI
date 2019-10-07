@@ -469,7 +469,7 @@ ConstructMarginalModel <- function(external_df,
     }  
     if (structtype == 'pconn') {
       for (curr_map in 1:length(all_maps))
-        write.csv(unlist(all_maps[curr_map]),file = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
+        write.table(array(unlist(all_maps[curr_map]),dim=c(sqrt(length(unlist(all_maps[curr_map]))),sqrt(length(unlist(all_maps[curr_map]))))),file = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
     }
   setwd(curr_directory)
   all_time = proc.time() - initial_time

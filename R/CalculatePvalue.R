@@ -16,7 +16,20 @@ CalculatePvalue <- function(observed_cc,WB_cc,nboot,sigtype){
     if (p == 0) {
       p <- 1/nboot
     }
-  } else 
+  } 
+  if(sigtype == 'enrichment'){
+    p <- sum(WB_cc > observed_cc)/nboot
+    if (p == 0) {
+      p <- 1/nboot
+    }
+  }     
+  if(sigtype == 'point'){
+    p <- sum(WB_cc > observed_cc)/nboot
+    if (p == 0) {
+      p <- 1/nboot
+    }   
+  }
+  if(sigtype == NULL)
     {
       p <- 2*pnorm(abs(observed_cc)*-1)
     }
