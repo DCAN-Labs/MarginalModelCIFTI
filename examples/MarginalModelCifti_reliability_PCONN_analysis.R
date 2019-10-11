@@ -1,6 +1,6 @@
 # title: "MarginalModelReliability_example"
 # author: "Eric Feczko"
-# date: "10/6/2019"
+# date: "10/10/2019"
 
 # To install MarginalModelCifti, one should do the following:
 # 1) make a directory for the MarginalModelCifti package `mkdir ~/MarginalModelCifti`
@@ -40,8 +40,8 @@ getwd()
 
 ### Set the below variable to your subset file. The subset file is a two-column file with the name of the subject contained within. This name should be unique and contained within the conc files as well.
 
-subset_file="/mnt/rose/shared/projects/ABCD/avg_pconn_maker/subset_analyses/raw/all_needed_subsets/subset_1_with_50_subjects.csv"
-
+subset_file_group1="/mnt/rose/shared/projects/ABCD/avg_pconn_maker/subset_analyses/raw/group1_needed_subsets/group1_subset_1_with_50_subjects.csv"
+subset_file_group2="/mnt/rose/shared/projects/ABCD/avg_pconn_maker/subset_analyses/raw/group2_needed_subsets/group2_subset_1_with_50_subjects.csv"
 ### Set the below variable to your external (i.e. non-imaging) dataset. The dataset should be a csv with headers representing the variables.
 
 external_df_group1 <- "/mnt/rose/shared/projects/ABCD/avg_pconn_maker/cordova_analysis_margmod_pcs/gp1_10min_pconn_reordered_nonan.csv"
@@ -82,7 +82,7 @@ surf_command="/mnt/max/shared/projects/FAIR_users/Feczko/code_in_dev/SurfConnect
 ### The predictor variables should use the column names within the `external_df` csv header.
 
 
-notation = formula(y~pc2_new)
+notation = formula(y~pc1_new)
 
 ### Set the below variable `corstr` to the correlation structure of the cases. Usually this should just be "independence".
 
@@ -111,7 +111,7 @@ z_thresh = 2.3
 ### WARNING, this part can be slow.
 
 
-nboot=4
+nboot=1
 
 ### Set the below variable `p_thresh` to the p value threshold for assessing significant clusters.
 ### Currently this has no functionality
@@ -133,12 +133,12 @@ id_subjects="subjectkey"
 ### Set the below variable `output_directory` to where you want to save your outputs
 
 
-output_directory="/mnt/rose/shared/projects/ABCD/avg_pconn_maker/mmc_pconn_demo"
-
+output_directory_group1="/mnt/rose/shared/projects/ABCD/avg_pconn_maker/subset_analyses/analyses/group1_subset_1_with_50_subjects"
+output_directory_group2="/mnt/rose/shared/projects/ABCD/avg_pconn_maker/subset_analyses/analyses/group2_subset_1_with_50_subjects"
 ### Set the below variable `ncores` to how many CPUs to run permutation testing in parallel
 
 
-ncores=4
+ncores=1
 
 ### Set the below variable `zcor` to a custom covariance matrix to denote participant similarity (e.g. a kinship or site matrix)
 
@@ -199,8 +199,10 @@ modules = "/mnt/max/shared/projects/FAIR_users/Feczko/code_in_dev/CommunityChisq
 
 wb_command = "/usr/local/bin/wb_command"
 
+
 ### With all the variables determined, you can now run the MarginalModel package using the `ConstructMarginalModel` command 
 
 
-group1_group2_similarity  <- MarginalModelReliability(external_df=external_df,concfile=concfile,structtype=structtype,structfile=structfile,matlab_path=matlab_path,surf_command=surf_command,wave=wave,notation=notation,zcor=zcor,corstr=corstr,family_dist=family_dist,dist_type=dist_type,z_thresh=z_thresh,nboot=nboot,p_thresh=p_thresh,sigtype=sigtype,id_subjects=id_subjects,output_directory=output_directory,ncores=ncores,fastSwE=fastSwE,adjustment=adjustment,norm_external_data=norm_external_data,norm_internal_data=norm_internal_data,marginal_outputs=marginal_outputs,marginal_matrix=marginal_matrix,enrichment_path=enrichment_path,modules=modules,wb_command=wb_command)
+group1_maps  <- ConstructMarginalModel(external_df=external_df_group1,concfile=group1_concfile,structtype=structtype,structfile=structfile,matlab_path=matlab_path,surf_command=surf_command,wave=group1_wave,notation=notation,zcor=zcor,corstr=corstr,family_dist=family_dist,dist_type=dist_type,z_thresh=z_thresh,nboot=nboot,p_thresh=p_thresh,sigtype=sigtype,id_subjects=id_subjects,output_directory=output_directory_group1,ncores=ncores,fastSwE=fastSwE,adjustment=adjustment,norm_external_data=norm_external_data,norm_internal_data=norm_internal_data,marginal_outputs=marginal_outputs,marginal_matrix=marginal_matrix,enrichment_path=enrichment_path,modules=modules,wb_command=wb_command,subsetfile=subset_file_group1)
+group2_maps  <- ConstructMarginalModel(external_df=external_df_group2,concfile=group2_concfile,structtype=structtype,structfile=structfile,matlab_path=matlab_path,surf_command=surf_command,wave=group2_wave,notation=notation,zcor=zcor,corstr=corstr,family_dist=family_dist,dist_type=dist_type,z_thresh=z_thresh,nboot=nboot,p_thresh=p_thresh,sigtype=sigtype,id_subjects=id_subjects,output_directory=output_directory_group2,ncores=ncores,fastSwE=fastSwE,adjustment=adjustment,norm_external_data=norm_external_data,norm_internal_data=norm_internal_data,marginal_outputs=marginal_outputs,marginal_matrix=marginal_matrix,enrichment_path=enrichment_path,modules=modules,wb_command=wb_command,subsetfile=subset_file_group2)
 

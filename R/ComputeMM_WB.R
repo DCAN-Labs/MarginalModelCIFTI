@@ -42,7 +42,8 @@ ComputeMM_WB <- function(x,resid_map,
                          adjustment,                       
                          enrichment_path = NULL,
                          modules = NULL,
-                         cifti_firstsub = NULL) {
+                         cifti_firstsub = NULL,
+                         output_directory = NULL) {
   require(purrr)
   require(cifti)
   require(gifti)
@@ -165,6 +166,7 @@ ComputeMM_WB <- function(x,resid_map,
                                       tempname=paste(output_directory,'/','boot',curr_meas,x,sep=""))
       all_cc[curr_meas] = max(boot_cc,na.rm=TRUE)
       file.remove(paste(output_directory,'/','boot_chisqrd',curr_meas,x,sep=""))
-  }
+    }
+    return(all_cc)
   }
 }

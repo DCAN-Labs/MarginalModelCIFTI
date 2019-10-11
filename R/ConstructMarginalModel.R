@@ -29,6 +29,7 @@
 #' @param enrichment_path A string depicting the path to the enrichment code. Used for enrichment analysis only (i.e. when sigtype is set to 'enrichment').
 #' @param modules A csv file or array that depicts the modules for the enrichment analysis.
 #' @param wb_command A character string denoting the path to the wb_command file
+#' @param subsetfile A character string denoting the path to a subset selection file, to select only a subset of the participants
 #' @#' @keywords wild bootstrap sandwich estimator marginal model CIFTI scalar
 #' @export
 #' @examples
@@ -61,7 +62,8 @@ ConstructMarginalModel <- function(external_df,
                                    marginal_matrix = NULL,
                                    enrichment_path = NULL,
                                    modules = NULL,
-                                   wb_command = 'wb_command'){
+                                   wb_command = 'wb_command',
+                                   subsetfile = NULL){
   initial_time = proc.time()
   require(purrr)
   require(cifti)
@@ -72,11 +74,27 @@ ConstructMarginalModel <- function(external_df,
   require(mmand)
   require(parallel)
   require(Rfast)
+  require(stringr)
   cifti_firstsub= NULL
   zeros_array = NULL
   curr_directory = getwd()
   setwd(output_directory)
   ciftilist <- read.csv(concfile,header=FALSE,col.names="file")
+  if (is.null(subsetfile) == FALSE){
+    subset_list <- read.csv(subsetfile,header=FALSE,col.names="subset")
+    print("parsing imaging list")
+    list_bin_expanded <- sapply(1:length(subset_list$subset),
+                    function(x) {
+                      SubSelection(as.character(ciftilist$file),
+                                   as.character(subset_list$subset[x])
+                                   )
+                      }
+                    )
+    list_bin = as.logical(rowsums(list_bin_expanded))
+    new_ciftilist = list()
+    new_ciftilist$file = ciftilist$file[list_bin]
+    ciftilist = as.data.frame(new_ciftilist)
+  }
   print("loading imaging data")
   start_load_time = proc.time()
   if (structtype == 'volume'){
@@ -146,10 +164,20 @@ ConstructMarginalModel <- function(external_df,
   print("loading non-imaging data")
   if (is.character(external_df)) {
     external_df <- read.csv(external_df,header=TRUE)
+    if (is.null(subsetfile) == FALSE){
+      external_df <- external_df[list_bin,]
+    }
     external_df <- external_df[cifti_nonans,]
     df_nan <- FilterDFNA(external_df = external_df,notation = notation)
     external_df = external_df[df_nan,]
-    cifti_scalarmap = cifti_scalarmap[df_nan,]
+    if (structtype != "surface"){
+      cifti_scalarmap = cifti_scalarmap[df_nan,]
+    }
+    if (structtype == "surface"){
+      if (fastSwE == FALSE) {
+        cifti_scalarmap = cifti_scalarmap[df_nan,]
+      }
+    }
     cifti_alldata = cifti_alldata[df_nan,]
     predictors <- attr(terms(notation),"term.labels")
     measnames <- c("intercept",predictors)    
@@ -162,6 +190,9 @@ ConstructMarginalModel <- function(external_df,
     print("loading longitudinal data")
     wave <- read.csv(wave,header=TRUE)
     wave <- DetermineNestedGroups(wave)
+    if (is.null(subsetfile) == FALSE){
+      wave = wave[list_bin]
+    }
     wave = wave[cifti_nonans]
     wave = wave[df_nan]
   }
@@ -421,7 +452,8 @@ ConstructMarginalModel <- function(external_df,
                        adjustment=adjustment,
                        enrichment_path = enrichment_path,
                        modules = modules,
-                       cifti_firstsub = zeros_array)
+                       cifti_firstsub = zeros_array,
+                       output_directory = output_directory)
     stopCluster(cl)
     finish_perm_time = proc.time() - start_perm_time
     cat("permutation testing complete. Time elapsed",finish_perm_time[3],"s")
@@ -442,7 +474,7 @@ ConstructMarginalModel <- function(external_df,
     }
     if (sigtype == 'enrichment'){
       for (curr_meas in 1:nmeas){
-        pval_map <- map(all_cc[,,curr_meas],CalculatePvalue,WB_cc=WB_cc[curr_meas,,],nboot=nboot,sigtype=sigtype)
+        pval_map <- map(all_cc[,,curr_meas],CalculatePvalue,WB_cc=WB_cc[curr_meas,],nboot=nboot,sigtype=sigtype)
         if (curr_meas == 1){
           all_maps = pval_map
         } else

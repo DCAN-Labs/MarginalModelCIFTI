@@ -13,7 +13,7 @@ ConstructMarginalModel(external_df, concfile, structtype, structfile,
   adjustment = NULL, norm_external_data = TRUE,
   norm_internal_data = TRUE, marginal_outputs = FALSE,
   marginal_matrix = NULL, enrichment_path = NULL, modules = NULL,
-  wb_command = "wb_command")
+  wb_command = "wb_command", subsetfile = NULL)
 }
 \arguments{
 \item{external_df}{A data frame comprising non-brain measures to model. Can be specified as a string to a csv file with appropriate headers.}
@@ -69,6 +69,8 @@ ConstructMarginalModel(external_df, concfile, structtype, structfile,
 \item{modules}{A csv file or array that depicts the modules for the enrichment analysis.}
 
 \item{wb_command}{A character string denoting the path to the wb_command file}
+
+\item{subsetfile}{A character string denoting the path to a subset selection file, to select only a subset of the participants}
 
 \item{fastSWE}{A boolean that determine the sandwhich estimator approach. If set to FALSE, will use standard R package geeglm. If set to TRUE will use custom-built estimator using rfast.}
 }

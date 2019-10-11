@@ -29,8 +29,7 @@ CalculatePvalue <- function(observed_cc,WB_cc,nboot,sigtype){
       p <- 1/nboot
     }   
   }
-  if(sigtype == NULL)
-    {
+  if(is.null(sigtype)){
       p <- 2*pnorm(abs(observed_cc)*-1)
     }
   return(p)
