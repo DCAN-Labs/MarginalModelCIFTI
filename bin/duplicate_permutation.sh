@@ -14,5 +14,6 @@ for iter in `seq 1 $nduplicates`; do
 	sed "s|$permfile_path|${permfile_path}${iter}|"<${Rfile} >${Rfile}${iter}.R
 	if [ $run_sbatch = sbatch ]; then
 		sbatch "$@" run_permutation.sh ${Rfile}${iter}.R
+		sleep 10
 	fi
 done
