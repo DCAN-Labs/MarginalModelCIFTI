@@ -1,6 +1,6 @@
-#' ConstructMarginalModel -- the main function that will estimate the significance of the marginal model fitted to a CIFTI dscalar dataset
+#' PermuteMarginalModel -- This permutation function that will perform a wild bootstrap for a marginalmodel analysis and output the permutations to a text file.
 #'
-#' This function wraps all of the other functions in the MarginalModelCifti package. The output is a significance map, which is either uncorrected or cluster detection was performed.
+#' This function wraps all of the other functions in the MarginalModelCifti package. The output is a text file containing the permutation tests.
 #' @param external_df A data frame comprising non-brain measures to model. Can be specified as a string to a csv file with appropriate headers.
 #' @param concfile A character string denoting a single column text file that lists the dscalars in the same order as the external_df and wave frames.
 #' @param structtype A character string denoting whether the map is volumetric ('volume'), surface-based ('surface'), or a pconn ('pconn').
@@ -18,8 +18,7 @@
 #' @param p_thresh A numeric that represents the p value threshold for assessing significance.
 #' @param sigtype A character string denoting cluster ('cluster'),  point ('point'), or enrichment ('enrichment') comparisons.
 #' @param id_subjects A character string denoting the column for the subject ID. Only needed when FastSwE is FALSE
-#' @param output_directory A character string denoting the path to the output MRI statistical maps
-#' @param ncores An integer denoting the number of CPU cores to use when conducting permutation tests
+#' @param output_directory A character string denoting the path to the output permutation tests
 #' @param fastSWE A boolean that determine the sandwhich estimator approach. If set to FALSE, will use standard R package geeglm. If set to TRUE will use custom-built estimator using rfast.
 #' @param adjustment A character string denoting the small sample size adjustment to use when fastSwE is set to TRUE. Is NULL by default.
 #' @param norm_external_data A boolean. If set to true, external data will be normed prior to analysis.
@@ -30,13 +29,12 @@
 #' @param modules A csv file or array that depicts the modules for the enrichment analysis.
 #' @param wb_command A character string denoting the path to the wb_command file
 #' @param subsetfile A character string denoting the path to a subset selection file, to select only a subset of the participants
-#' @param permutation_directory A character string denoting the path to the directory containing ONLY permutation tests. If set to NULL, permutation tests will be generated on the fly
 #' @#' @keywords wild bootstrap sandwich estimator marginal model CIFTI scalar
 #' @export
 #' @examples
 #' max_cc <- ComputeMM_WB(cifti_map,zscore_map,resid_map,fit_map,type,external_df,
 #' notation,family_dist,structtype,thresh,structfile,matlab_path,surf_command,correctiontype)
-ConstructMarginalModel <- function(external_df,
+PermuteMarginalModel <- function(external_df,
                                    concfile,
                                    structtype,
                                    structfile,
@@ -54,7 +52,6 @@ ConstructMarginalModel <- function(external_df,
                                    sigtype = 'cluster',
                                    id_subjects='subid',
                                    output_directory='~/',
-                                   ncores=1,
                                    fastSwE = TRUE,
                                    adjustment = NULL,
                                    norm_external_data = TRUE,
@@ -65,7 +62,7 @@ ConstructMarginalModel <- function(external_df,
                                    modules = NULL,
                                    wb_command = 'wb_command',
                                    subsetfile = NULL,
-                                   permutation_directory = NULL){
+                                   output_permfile = "~/permfile.txt"){
   initial_time = proc.time()
   require(purrr)
   require(cifti)
@@ -223,145 +220,18 @@ ConstructMarginalModel <- function(external_df,
   {
     cifti_map <- lm.fit(external_df,cifti_alldata)
     beta_map <- cifti_map$coefficients
-    if (marginal_outputs == TRUE){
-      marginal_map = array(data = 0, dim = c(dim(marginal_matrix)[1],dim(beta_map)[2]))
-      for (curr_marginal in 1:dim(marginal_matrix)[1]){
-        marginal_map[curr_marginal,] <- sapply(1:dim(beta_map)[2],function(x){CalculateMarginalValue(beta_map[,x],marginal_matrix[curr_marginal,])})
-      }
-      if (structtype == 'surface'){
-        for (curr_map in 1:dim(marginal_map)[1]){
-          WriteVectorToGifti(metric_data = marginal_map[curr_map,],
-                             surf_template_file = as.character(ciftilist[1,1]),
-                             surf_command = surf_command,
-                             matlab_path = matlab_path,
-                             output_file = paste(output_directory,'/','marginal_map_',measnames[curr_map],'.func.gii',sep=""))      
-        }       
-      } 
-      if (structtype == 'volume') {
-        for (curr_map in 1:dim(marginal_map)[1]){
-          temp_map <- RevertVolume(marginal_map[curr_map,],cifti_dim)
-          cifti_file[] <- temp_map
-          writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','marginal_map_',measnames[curr_map],sep=""))
-        }
-      }
-      if (structtype == 'pconn'){
-        for (curr_map in 1:dim(marginal_map)[1]){
-          temp_mat <- Matrix2Vector(pconn_data = zeros_array,
-                                    pconn_vector = marginal_map[curr_map,],
-                                    direction = "to_matrix")
-          WriteMatrixToCifti(metric_data = temp_mat,
-                             ncols = dim(temp_mat)[1],
-                             surf_template_file = as.character(ciftilist$file[1],),
-                             matlab_path = matlab_path,
-                             surf_command = surf_command,
-                             output_file = paste(output_directory,'/','marginal_map_',measnames[curr_map],sep=""),
-                             wb_command = wb_command)
-        }
-      }
-    }
     resid_map <- cifti_map$residuals
     fit_map <- cifti_map$fitted.values
     Nelm <- dim(beta_map)[2]
     t_map <- ComputeFastSwE(X=external_df,nested=wave,Nelm=Nelm,resid_map=resid_map,npredictors=nmeas,beta_map=beta_map,adjustment=adjustment)
-    if (structtype == 'surface'){
-      for (curr_map in 1:dim(t_map)[1]){
-        WriteVectorToGifti(metric_data = t_map[curr_map,],
-                           surf_template_file = as.character(ciftilist[1,1]),
-                           surf_command = surf_command,
-                           matlab_path = matlab_path,
-                           output_file = paste(output_directory,'/','t_map_',measnames[curr_map],'.func.gii',sep=""))      
-      }       
-    } else
-    if (structtype == 'volume'){
-      for (curr_map in 1:dim(t_map)[1]){
-        temp_map <- RevertVolume(t_map[curr_map,],cifti_dim)
-        cifti_file[] <- temp_map
-        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','t_map_',measnames[curr_map],sep=""))
-      }
-    }
-    if (structtype == 'pconn'){
-      for (curr_map in 1:dim(t_map)[1]){
-        temp_mat <- Matrix2Vector(pconn_data = zeros_array,
-                                  pconn_vector = t_map[curr_map,],
-                                  direction = "to_matrix")
-        WriteMatrixToCifti(metric_data = temp_mat,
-                           ncols = dim(temp_mat)[1],
-                           surf_template_file = as.character(ciftilist$file[1]),
-                           matlab_path = matlab_path,
-                           surf_command = surf_command,
-                           output_file = paste(output_directory,'/','t_map_',measnames[curr_map],sep=""),
-                           wb_command = wb_command)
-      }
-    }
-    
     finish_model_time = proc.time() - start_model_time
     cat("modeling complete. Time elapsed: ",finish_model_time[3],"s")
     start_normthresh_time = proc.time()
     print("Normalizing observed marginal model estimates")
     zscore_map <- t(sapply(1:nmeas,function(x) {(t_map[x,] - mean(t_map[x,is.finite(t_map[x,])]))/sd(t_map[x,is.finite(t_map[x,])])}))
-    if (structtype == 'surface'){
-      for (curr_map in 1:dim(zscore_map)[1]){
-        WriteVectorToGifti(metric_data = zscore_map[curr_map,],
-                           surf_template_file = as.character(ciftilist[1,1]),
-                           surf_command = surf_command,
-                           matlab_path = matlab_path,
-                           output_file = paste(output_directory,'/','zscore_map_',measnames[curr_map],'.func.gii',sep=""))      
-      }       
-    }
-    if (structtype == 'volume') {
-      for (curr_map in 1:dim(zscore_map)[1]){
-        temp_map <- RevertVolume(zscore_map[curr_map,],cifti_dim)
-        cifti_file[] <- temp_map
-        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','zscore_map_',measnames[curr_map],sep=""))
-      }      
-    }
-    if (structtype == 'pconn'){
-      for (curr_map in 1:dim(zscore_map)[1]){
-        temp_mat <- Matrix2Vector(pconn_data = zeros_array,
-                                  pconn_vector = zscore_map[curr_map,],
-                                  direction = "to_matrix")
-        WriteMatrixToCifti(metric_data = temp_mat,
-                           ncols = dim(temp_mat)[1],
-                           surf_template_file = as.character(ciftilist$file[1]),
-                           matlab_path = matlab_path,
-                           surf_command = surf_command,
-                           output_file = paste(output_directory,'/','zscore_map_',measnames[curr_map],sep=""),
-                           wb_command = wb_command)
-      }
-    }    
     print("thresholding observed z scores")
     thresh_map <- t(sapply(1:nmeas,function(x) abs(zscore_map[x,]) > z_thresh))
     thresh_map[is.na(thresh_map)] <- NaN
-    if (structtype == 'surface'){
-      for (curr_map in 1:dim(thresh_map)[1]){
-        WriteVectorToGifti(metric_data = thresh_map[curr_map,],
-                           surf_template_file = as.character(ciftilist[1,1]),
-                           surf_command = surf_command,
-                           matlab_path = matlab_path,
-                           output_file = paste(output_directory,'/','thresh_map_',measnames[curr_map],'.func.gii',sep=""))      
-      }       
-    }
-    if (structtype == 'volume'){
-      for (curr_map in 1:dim(thresh_map)[1]){
-        temp_map <- RevertVolume(thresh_map[curr_map,],cifti_dim)
-        cifti_file[] <- temp_map
-        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','thresh_map_',measnames[curr_map],sep=""))
-      }
-    }
-    if (structtype == 'pconn'){
-      for (curr_map in 1:dim(thresh_map)[1]){
-        temp_mat <- Matrix2Vector(pconn_data = zeros_array,
-                                  pconn_vector = thresh_map[curr_map,],
-                                  direction = "to_matrix")
-        WriteMatrixToCifti(metric_data = temp_mat,
-                           ncols = dim(temp_mat)[1],
-                           surf_template_file = as.character(ciftilist$file[1]),
-                           matlab_path = matlab_path,
-                           surf_command = surf_command,
-                           output_file = paste(output_directory,'/','tresh_map_',measnames[curr_map],sep=""),
-                           wb_command = wb_command)
-      }
-    }
     finish_normthresh_time = proc.time() - start_normthresh_time    
     cat("thresholding complete. Time elapsed: ", finish_normthresh_time[3],"s")
   }
@@ -383,22 +253,6 @@ ConstructMarginalModel <- function(external_df,
       {
         observed_cc <- GetSurfAreas(thresh_array,structfile,matlab_path,surf_command)
         all_cc[,curr_meas] = observed_cc
-      }
-    }
-    if (structtype == 'surface'){
-      for (curr_map in 1:dim(all_cc)[2]){
-        WriteVectorToGifti(metric_data = all_cc[,curr_map],
-                           surf_template_file = as.character(ciftilist[1,1]),
-                           surf_command = surf_command,
-                           matlab_path = matlab_path,
-                           output_file = paste(output_directory,'/','observed_clusters_',measnames[curr_map],'.func.gii',sep=""))      
-      }       
-    } else
-    {
-      for (curr_map in 1:dim(all_cc)[2]){
-        temp_map <- RevertVolume(all_cc[curr_map,],cifti_dim)
-        cifti_file[] <- temp_map
-        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','observed_clusters_',measnames[curr_map],sep=""))
       }
     }
   }
@@ -427,104 +281,44 @@ ConstructMarginalModel <- function(external_df,
     }
     finish_clust_time = proc.time() - start_clust_time
     cat("cluster detection complete. Time elapsed", finish_clust_time[3],"s")
-    if(is.null(permutation_directory)){
-      print("performing permutation test")
-      start_perm_time = proc.time()
-      seeds <- sample(.Machine$integer.max,size=nboot)
-      cl <- makeForkCluster(nnodes = ncores)
-      WB_cc <- parSapply(cl,1:nboot,ComputeMM_WB,resid_map=resid_map,
-                         fit_map=fit_map,
-                         type=dist_type,
-                         external_df=external_df,
-                         notation=notation,
-                         family_dist=family_dist,
-                         structtype=structtype,
-                         thresh = z_thresh,
-                         structfile=structfile,
-                         matlab_path=matlab_path,
-                         surf_command=surf_command,
-                         corstr=corstr,
-                         wave=wave,
-                         zcor=zcor,
-                         correctiontype = sigtype,
-                         id_subjects=id_subjects,
-                         cifti_dim=cifti_dim,
-                         nmeas=nmeas,
-                         seeds=seeds,
-                         fastSwE=fastSwE,
-                         adjustment=adjustment,
-                         enrichment_path = enrichment_path,
-                         modules = modules,
-                         cifti_firstsub = zeros_array,
-                         output_directory = output_directory)
-      stopCluster(cl)
+    print("performing permutation test")
+    start_perm_time = proc.time()
+    seeds <- sample(.Machine$integer.max,size=nboot)
+    for (iter in 1:nboot){
+      WB_cc <- ComputeMM_WB(iter,resid_map=resid_map,
+                           fit_map=fit_map,
+                           type=dist_type,
+                           external_df=external_df,
+                           notation=notation,
+                           family_dist=family_dist,
+                           structtype=structtype,
+                           thresh = z_thresh,
+                           structfile=structfile,
+                           matlab_path=matlab_path,
+                           surf_command=surf_command,
+                           corstr=corstr,
+                           wave=wave,
+                           zcor=zcor,
+                           correctiontype = sigtype,
+                           id_subjects=id_subjects,
+                           cifti_dim=cifti_dim,
+                           nmeas=nmeas,
+                           seeds=seeds,
+                           fastSwE=fastSwE,
+                           adjustment=adjustment,
+                           enrichment_path = enrichment_path,
+                           modules = modules,
+                           cifti_firstsub = zeros_array,
+                           output_directory = output_directory)
+      write.table(t(unlist(WB_cc)),
+                  file=output_permfile,
+                  sep = ",",
+                  append=TRUE,
+                  col.names = FALSE,
+                  row.names = FALSE)
+    }
       finish_perm_time = proc.time() - start_perm_time
       cat("permutation testing complete. Time elapsed",finish_perm_time[3],"s")
-    } else
-      {
-      print("aggregating p values from already performed permutation test")
-      start_perm_time = proc.time()
-      permutation_file_list <- dir(permutation_directory)
-      count = 1
-      for (permutation_file in permutation_file_list){
-        if (count == 1){
-          WB_cc = read.csv(paste(permutation_directory,permutation_file,sep='/'),header=FALSE)
-        }
-        WB_cc_temp = read.csv(paste(permutation_directory,permutation_file,sep='/'),header=FALSE)
-        WB_cc = rbind(WB_cc,WB_cc_temp)      
-      }
-      finish_perm_time = proc.time() - start_perm_time
-      cat("aggregation complete. Time elapsed",finish_perm_time[3],"s")
-    }
-    print("calculating p values for observed data using null distribution(s)")
-    if (sigtype == 'cluster'){
-      for (curr_meas in 1:nmeas){
-        pval_map <- map(all_cc[,curr_meas],CalculatePvalue,WB_cc=WB_cc[curr_meas,],nboot=nboot,sigtype=sigtype)
-        if (curr_meas == 1){
-          all_maps = pval_map
-        } else
-        {
-          all_maps <- list(all_maps,pval_map)
-        }
-      }
-    }
-    if (sigtype == 'point'){
-      all_maps <- map(zscore_map,CalculatePvalue,WB_cc=NaN,nboot=NaN,sigtype=sigtype)
-    }
-    if (sigtype == 'enrichment'){
-      for (curr_meas in 1:nmeas){
-        pval_map <- map(all_cc[,,curr_meas],CalculatePvalue,WB_cc=WB_cc[curr_meas,],nboot=nboot,sigtype=sigtype)
-        if (curr_meas == 1){
-          all_maps = pval_map
-        } else
-        {
-          all_maps <- list(all_maps,pval_map)
-        }
-      }
-    }    
-    if (structtype == 'surface'){
-      for (curr_map in 1:length(all_maps)){
-        WriteVectorToGifti(metric_data = unlist(all_maps[curr_map]),
-                           surf_template_file = as.character(ciftilist[1,1]),
-                           surf_command = surf_command,
-                           matlab_path = matlab_path,
-                           output_file = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],'.func.gii',sep=""))      
-      }       
-    }
-    if (structtype == 'volume') {
-      for (curr_map in 1:length(all_maps)){
-        temp_map <- RevertVolume(unlist(all_maps[curr_map]),cifti_dim)
-        cifti_file[] <- temp_map
-        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
-      }
-    }  
-    if (structtype == 'pconn') {
-      for (curr_map in 1:length(all_maps))
-        write.table(array(unlist(all_maps[curr_map]),dim=c(sqrt(length(unlist(all_maps[curr_map]))),sqrt(length(unlist(all_maps[curr_map]))))),file = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
-    }
-  setwd(curr_directory)
-  all_time = proc.time() - initial_time
-  cat("ConstructMarginalModel complete. Time elapsed", all_time[3],"s")
-  return(all_maps)
+      
 }
 
