@@ -131,7 +131,7 @@ id_subjects="subjectkey"
 ### Set the below variable `output_directory` to where you want to save your outputs
 
 
-output_directory="/mnt/rose/shared/projects/ABCD/avg_pconn_maker/subset_analyses/analyses/scratch/group1_observed/"
+output_directory="/mnt/rose/shared/projects/ABCD/avg_pconn_maker/subset_analyses/analyses/scratch/group1_observed//perm4"
 
 ### Set the below variable `zcor` to a custom covariance matrix to denote participant similarity (e.g. a kinship or site matrix)
 
@@ -195,7 +195,7 @@ subsetfile="/mnt/rose/shared/projects/ABCD/avg_pconn_maker/subset_analyses/raw/g
 
 ### The below variable represents a path to the output permutation file. 
 
-output_permfile = '/mnt/rose/shared/projects/ABCD/avg_pconn_maker/subset_analyses/analyses/scratch/perms_group1/permfile.txt4'
+output_permfile = '/mnt/rose/shared/projects/ABCD/avg_pconn_maker/subset_analyses/analyses/scratch/perms_group1/permfile.txt1'
 
 ### With all the variables determined, you can now run the MarginalModel package using the `ConstructMarginalModel` command 
 

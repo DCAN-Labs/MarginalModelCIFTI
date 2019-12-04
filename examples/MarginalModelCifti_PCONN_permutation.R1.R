@@ -131,7 +131,7 @@ id_subjects="subjectkey"
 ### Set the below variable `output_directory` to where you want to save your outputs
 
 
-output_directory="/mnt/rose/shared/projects/ABCD/avg_pconn_maker/subset_analyses/analyses/scratch/group1_observed/"
+output_directory="/mnt/rose/shared/projects/ABCD/avg_pconn_maker/subset_analyses/analyses/scratch/group1_observed//perm1"
 
 ### Set the below variable `zcor` to a custom covariance matrix to denote participant similarity (e.g. a kinship or site matrix)
 
