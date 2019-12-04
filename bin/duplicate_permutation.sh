@@ -18,13 +18,19 @@ if [[ -z ${permfile_path_suffix} ]]; then permfile_path_suffix=`echo ${permfile_
 #pull the output directory path so that we can change it iteratively
 output_path=`grep 'output_directory' ${Rfile} | grep -m 1 '='`
 output_path_suffix=`echo ${output_path} | awk -F'"' '{print $2}'`
+output_path_flag=2
 
 #the output directory path may be encapsulated by single quotes -- so if its empty use single quotes instead to grab it
-if [[ -z ${output_path_suffix} ]]; then output_path_suffix=`echo ${output_path} | awk -F"'" '{print $2}'`; fi
+if [[ -z ${output_path_suffix} ]]; then output_path_suffix=`echo ${output_path} | awk -F"'" '{print $2}'`; output_path_flag=1 ;fi
 
 for iter in `seq 1 $nduplicates`; do 
 	sed "s|"${permfile_path_suffix}"|"${permfile_path_suffix}1"|"<${Rfile} >${Rfile}${iter}_temp.R
-	sed "s|${output_path_suffix}|${output_path_suffix}/perm${iter}|"<${Rfile}${iter}_temp.R >${Rfile}${iter}.R
+	if [[ $output_path_flag=2 ]]; then 
+		sed "s|${output_path_suffix}/"|${output_path_suffix}/perm${iter}/"|"<${Rfile}${iter}_temp.R >${Rfile}${iter}.R
+	fi
+	if [[ $output_path_flag=1 ]]; then
+		sed "s|${output_path_suffix}'|${output_path_suffix}/perm${iter}'|"<${Rfile}${iter}_temp.R >${Rfile}${iter}.R
+	fi
 	rm ${Rfile}${iter}_temp.R
 	mkdir ${output_path_suffix}/perm${iter}
 	if [[ ! -z ${run_sbatch} ]]; then
