@@ -25,10 +25,10 @@ if [[ -z ${output_path_suffix} ]]; then output_path_suffix=`echo ${output_path} 
 
 for iter in `seq 1 $nduplicates`; do 
 	sed "s|"${permfile_path_suffix}"|"${permfile_path_suffix}1"|"<${Rfile} >${Rfile}${iter}_temp.R
-	if [[ $output_path_flag=2 ]]; then 
-		sed "s|"${output_path_suffix}/"|"${output_path_suffix}/perm${iter}/"|"<${Rfile}${iter}_temp.R >${Rfile}${iter}.R
+	if [[ $output_path_flag = 2 ]]; then
+		sed "s|"${output_path_suffix}"|"${output_path_suffix}/perm${iter}/"|"<${Rfile}${iter}_temp.R >${Rfile}${iter}.R
 	fi
-	if [[ $output_path_flag=1 ]]; then
+	if [[ $output_path_flag = 1 ]]; then
 		sed "s|${output_path_suffix}'|${output_path_suffix}/perm${iter}'|"<${Rfile}${iter}_temp.R >${Rfile}${iter}.R
 	fi
 	rm ${Rfile}${iter}_temp.R
