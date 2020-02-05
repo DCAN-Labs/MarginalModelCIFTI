@@ -32,19 +32,19 @@ library(MarginalModelCifti)
 
 ### Set your project folder, which is where you plan to run the analysis, then go to the folder
 
-projectsfolder="/mnt/rose/shared/projects/ABCD/avg_pconn_maker/"
+projectsfolder="examples/"
 setwd(projectsfolder)
 getwd()
 
 ### Now declare the needed variables to run a marginal model
 ### Set the below variable to your external (i.e. non-imaging) dataset. The dataset should be a csv with headers representing the variables.
 
-external_df="/mnt/rose/shared/projects/ABCD/avg_pconn_maker/cordova_analysis_margmod_pcs/gp1_10min_pconn.csv"
+external_df="examples/example_external_data_file.csv"
 
 ### Set the below variable to a single column textfile, where each row contains a path to each participant's metric file.
 ### The metric file should be ordered in the same order as the external_df file
 
-concfile="/mnt/rose/shared/projects/ABCD/avg_pconn_maker/cordova_analysis_margmod_pcs/group1_10min.conc"
+concfile="examples/example_concfile.conc"
 
 ### Set the below variable structtype to the type of brain structure (i.e. "surface", "volume", or "pconn") for the metric file.
 ### This is needed for the cluster detection to work properly.
@@ -61,12 +61,12 @@ structfile=NULL
 
 ### If the structtype is set to "surface" or "pconn", set the below variable matlab_path to the matlab2016b compiler.
 
-matlab_path="/mnt/max/shared/code/external/utilities/Matlab2016bRuntime/v91"
+matlab_path="/usr/local/Matlab2016bRuntime/v91"
 
 
 ### If the structtype is set to "surface", set the below variable to the SurfConnectivity script
 
-surf_command="/mnt/max/shared/projects/FAIR_users/Feczko/code_in_dev/SurfConnectivity/"
+surf_command="/usr/local/SurfConnectivity/"
 
 
 ### Specify the model you want to run in the below variable notation.
@@ -75,7 +75,7 @@ surf_command="/mnt/max/shared/projects/FAIR_users/Feczko/code_in_dev/SurfConnect
 ### The predictor variables should use the column names within the `external_df` csv header.
 
 
-notation = formula(y~pc2_new)
+notation = formula(y~RT)
 
 ### Set the below variable `corstr` to the correlation structure of the cases. Usually this should just be "independence".
 
@@ -126,7 +126,7 @@ id_subjects="subjectkey"
 ### Set the below variable `output_directory` to where you want to save your outputs
 
 
-output_directory="/mnt/rose/shared/projects/ABCD/avg_pconn_maker/mmc_pconn_demo"
+output_directory="examples/mmc_pconn_demo"
 
 ### Set the below variable `ncores` to how many CPUs to run permutation testing in parallel
 
@@ -154,7 +154,7 @@ adjustment=NULL
 ### Set the below variable `wave` to a csv file that denotes how subjects should be grouped and nested
 
 
-wave = "/mnt/rose/shared/projects/ABCD/avg_pconn_maker/cordova_analysis_margmod_pcs/gp1_marg_nested.csv"
+wave = "examples/example_wave_file.csv"
 
 ### The below variable will normalize the external_df data per variable if set to true
 
@@ -179,12 +179,12 @@ marginal_matrix = NULL
 ### The below variable is a string representing the path to the enrichment repository and compiled code
 
 
-enrichment_path = "/mnt/max/shared/projects/FAIR_users/Feczko/code_in_dev/CommunityChisquaredAnalysis/"
+enrichment_path = "/usr/local/CommunityChisquaredAnalysis/"
 
 ### The below variable is a string that represents the path to a csv containing modules
 
 
-modules = "/mnt/max/shared/projects/FAIR_users/Feczko/code_in_dev/CommunityChisquaredAnalysis/gordon_modules.csv"
+modules = "/usr/local/CommunityChisquaredAnalysis/gordon_modules.csv"
 
 ### The below variable is a string that represents the path to the workbench command
 
