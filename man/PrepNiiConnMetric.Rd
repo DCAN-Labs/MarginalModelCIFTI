@@ -4,10 +4,12 @@
 \alias{PrepNiiConnMetric}
 \title{PrepNiiConnMetric -- A function for loading nifti connectivity metric data}
 \usage{
-PrepNiiConnMetric(niiconn_file)
+PrepNiiConnMetric(niiconn_file, flip = TRUE)
 }
 \arguments{
 \item{niiconn_file}{A character string representing the path to a nifti connectivity matrix file.}
+
+\item{flip}{A boolean representing TRUE or FALSE. If set to TRUE, will rotate the matrix 180 degrees so that it is ordered properly with a parcel file}
 }
 \description{
 This function is a simple wrapper for reading connectivity matrices from niftis. 

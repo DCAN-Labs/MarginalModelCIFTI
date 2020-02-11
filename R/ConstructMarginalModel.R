@@ -162,7 +162,32 @@ ConstructMarginalModel <- function(external_df,
      }
    }
    cifti_scalarmap <- as.data.frame(cifti_alldata)  
- }  
+ }
+  if (structtype == 'niiconn'){
+    ciftilist <- read.csv(concfile,header=FALSE,col.names="file")
+    cifti_firstsub <- PrepVolMetric(as.character(ciftilist$file[1]))
+    cifti_dim <- dim(cifti_firstsub)
+    cifti_alldata <- array(data = NA, dim = c(length(ciftilist$file),dim(cifti_firstsub)[1]*(dim(cifti_firstsub)[1]-1)/2))
+    zeros_array <- array(data=0,dim = c(dim(cifti_firstsub)[1],dim(cifti_firstsub)[2]))
+    count = 1
+    for (filename in ciftilist$file) { 
+      cifti_temp <- PrepNiiConnMetric(filename)
+      cifti_alldata[count,] <- Matrix2Vector(cifti_temp)
+      count = count + 1
+    }
+    Nelm <- dim(cifti_alldata)[2]
+    cifti_dim <- Nelm
+    cifti_nonans <- sapply(1:dim(cifti_alldata)[1],function(x){ sum(is.na(cifti_alldata[x,]))==0})
+    cifti_alldata <- cifti_alldata[cifti_nonans,]
+    if (norm_internal_data == TRUE){
+      for (count in 1:Nelm){
+        if (var(cifti_alldata[,count]) != 0) { 
+          cifti_alldata[,count] <- ((cifti_alldata[,count] - mean(cifti_alldata[,count]))/sd(cifti_alldata[,count]))
+        }     
+      }
+    }
+    cifti_scalarmap <- as.data.frame(cifti_alldata)
+  }
   print("loading non-imaging data")
   if (is.character(external_df)) {
     external_df <- read.csv(external_df,header=TRUE)
