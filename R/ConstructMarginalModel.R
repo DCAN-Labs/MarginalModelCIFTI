@@ -3,7 +3,7 @@
 #' This function wraps all of the other functions in the MarginalModelCifti package. The output is a significance map, which is either uncorrected or cluster detection was performed.
 #' @param external_df A data frame comprising non-brain measures to model. Can be specified as a string to a csv file with appropriate headers.
 #' @param concfile A character string denoting a single column text file that lists the dscalars in the same order as the external_df and wave frames.
-#' @param structtype A character string denoting whether the map is volumetric ('volume'), surface-based ('surface'), or a pconn ('pconn').
+#' @param structtype A character string denoting whether the map is volumetric ('volume'), surface-based ('surface'), a pconn ('pconn'), or a NIFTI connectivity matrix ('niiconn').
 #' @param structfile A character string denoting the structural map file, used for cluster detection on surfaces only.
 #' @param matlab_path A character string denoting the path to the matlab compiler. Please use v91.
 #' @param surf_command A character string denoting the path to the SurfConnectivity command.
@@ -165,7 +165,7 @@ ConstructMarginalModel <- function(external_df,
  }
   if (structtype == 'niiconn'){
     ciftilist <- read.csv(concfile,header=FALSE,col.names="file")
-    cifti_firstsub <- PrepVolMetric(as.character(ciftilist$file[1]))
+    cifti_firstsub <- PrepNiiConnMetric(as.character(ciftilist$file[1]))
     cifti_dim <- dim(cifti_firstsub)
     cifti_alldata <- array(data = NA, dim = c(length(ciftilist$file),dim(cifti_firstsub)[1]*(dim(cifti_firstsub)[1]-1)/2))
     zeros_array <- array(data=0,dim = c(dim(cifti_firstsub)[1],dim(cifti_firstsub)[2]))

@@ -20,7 +20,7 @@ PrepNiiConnMetric <- function(niiconn_file,flip = TRUE){
   if (flip == TRUE){
     niiconnmat_t <- t(apply(niiconnmat,2,rev))
     niiconnmat_t2 <- t(apply(niiconnmat_t,2,rev))
-    niiconnmat <- niiconnmat_t2
+    niiconnmat[,] = niiconnmat_t2
   }
   return(niiconnmat)
 }
