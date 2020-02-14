@@ -3,7 +3,7 @@
 #' This function wraps all of the other functions in the MarginalModelCifti package. The output is a text file containing the permutation tests.
 #' @param external_df A data frame comprising non-brain measures to model. Can be specified as a string to a csv file with appropriate headers.
 #' @param concfile A character string denoting a single column text file that lists the dscalars in the same order as the external_df and wave frames.
-#' @param structtype A character string denoting whether the map is volumetric ('volume'), surface-based ('surface'), or a pconn ('pconn').
+#' @param structtype A character string denoting whether the map is volumetric ('volume'), surface-based ('surface'), a pconn ('pconn'), or a niiconn ('niiconn').
 #' @param structfile A character string denoting the structural map file, used for cluster detection on surfaces only.
 #' @param matlab_path A character string denoting the path to the matlab compiler. Please use v91.
 #' @param surf_command A character string denoting the path to the SurfConnectivity command.
@@ -159,7 +159,32 @@ PermuteMarginalModel <- function(external_df,
      }
    }
    cifti_scalarmap <- as.data.frame(cifti_alldata)  
- }  
+ }
+  if (structtype == 'niiconn'){
+    ciftilist <- read.csv(concfile,header=FALSE,col.names="file")
+    cifti_firstsub <- PrepNiiConnMetric(as.character(ciftilist$file[1]))
+    cifti_dim <- dim(cifti_firstsub)
+    cifti_alldata <- array(data = NA, dim = c(length(ciftilist$file),dim(cifti_firstsub)[1]*(dim(cifti_firstsub)[1]-1)/2))
+    zeros_array <- array(data=0,dim = c(dim(cifti_firstsub)[1],dim(cifti_firstsub)[2]))
+    count = 1
+    for (filename in ciftilist$file) { 
+      cifti_temp <- PrepNiiConnMetric(filename)
+      cifti_alldata[count,] <- Matrix2Vector(cifti_temp)
+      count = count + 1
+    }
+    Nelm <- dim(cifti_alldata)[2]
+    cifti_dim <- Nelm
+    cifti_nonans <- sapply(1:dim(cifti_alldata)[1],function(x){ sum(is.na(cifti_alldata[x,]))==0})
+    cifti_alldata <- cifti_alldata[cifti_nonans,]
+    if (norm_internal_data == TRUE){
+      for (count in 1:Nelm){
+        if (var(cifti_alldata[,count]) != 0) { 
+          cifti_alldata[,count] <- ((cifti_alldata[,count] - mean(cifti_alldata[,count]))/sd(cifti_alldata[,count]))
+        }     
+      }
+    }
+    cifti_scalarmap <- as.data.frame(cifti_alldata)
+  }  
   print("loading non-imaging data")
   if (is.character(external_df)) {
     external_df <- read.csv(external_df,header=TRUE)

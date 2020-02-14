@@ -283,6 +283,15 @@ ConstructMarginalModel <- function(external_df,
                              wb_command = wb_command)
         }
       }
+      if (structtype == 'niiconn'){
+        for (curr_map in 1:dim(marginal_map)[1]){
+          temp_map <- Matrix2Vector(pconn_data = zeros_array,
+                                    pconn_vector = marginal_map[curr_map,],
+                                    direction = "to_matrix")
+          cifti_firstsub[] = temp_map
+          writeNIfTI(nim=cifti_firstsub,filename=paste(output_directory,'/','marginal_map_',measnames[curr_map],sep=""))
+        }
+      }
     }
     resid_map <- cifti_map$residuals
     fit_map <- cifti_map$fitted.values
@@ -316,6 +325,15 @@ ConstructMarginalModel <- function(external_df,
                            surf_command = surf_command,
                            output_file = paste(output_directory,'/','t_map_',measnames[curr_map],sep=""),
                            wb_command = wb_command)
+      }
+    }
+    if (structtype == 'niiconn'){
+      for (curr_map in 1:dim(t_map)[1]){
+        temp_map <- Matrix2Vector(pconn_data = zeros_array,
+                                  pconn_vector = t_map[curr_map,],
+                                  direction = "to_matrix")
+        cifti_firstsub[] = temp_map
+        writeNIfTI(nim=cifti_firstsub,filename=paste(output_directory,'/','t_map_',measnames[curr_map],sep=""))
       }
     }
     
@@ -353,6 +371,15 @@ ConstructMarginalModel <- function(external_df,
                            output_file = paste(output_directory,'/','zscore_map_',measnames[curr_map],sep=""),
                            wb_command = wb_command)
       }
+    }
+    if (structtype == 'niiconn'){
+      for (curr_map in 1:dim(zscore_map)[1]){
+        temp_map <- Matrix2Vector(pconn_data = zeros_array,
+                                  pconn_vector = zscore_map[curr_map,],
+                                  direction = "to_matrix")
+        cifti_firstsub[] = temp_map
+        writeNIfTI(nim=cifti_firstsub,filename=paste(output_directory,'/','zscore_map_',measnames[curr_map],sep=""))
+      }
     }    
     print("thresholding observed z scores")
     thresh_map <- t(sapply(1:nmeas,function(x) abs(zscore_map[x,]) > z_thresh))
@@ -383,10 +410,19 @@ ConstructMarginalModel <- function(external_df,
                            surf_template_file = as.character(ciftilist$file[1]),
                            matlab_path = matlab_path,
                            surf_command = surf_command,
-                           output_file = paste(output_directory,'/','tresh_map_',measnames[curr_map],sep=""),
+                           output_file = paste(output_directory,'/','thresh_map_',measnames[curr_map],sep=""),
                            wb_command = wb_command)
       }
     }
+    if (structtype == 'niiconn'){
+      for (curr_map in 1:dim(t_map)[1]){
+        temp_map <- Matrix2Vector(pconn_data = zeros_array,
+                                  pconn_vector = thresh_map[curr_map,],
+                                  direction = "to_matrix")
+        cifti_firstsub[] = temp_map
+        writeNIfTI(nim=cifti_firstsub,filename=paste(output_directory,'/','thresh_map_',measnames[curr_map],sep=""))
+      }
+    }    
     finish_normthresh_time = proc.time() - start_normthresh_time    
     cat("thresholding complete. Time elapsed: ", finish_normthresh_time[3],"s")
   }
@@ -543,10 +579,14 @@ ConstructMarginalModel <- function(external_df,
         writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
       }
     }  
-    if (structtype == 'pconn') {
+    if (sigtype == 'pconn') {
       for (curr_map in 1:length(all_maps))
         write.table(array(unlist(all_maps[curr_map]),dim=c(sqrt(length(unlist(all_maps[curr_map]))),sqrt(length(unlist(all_maps[curr_map]))))),file = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
     }
+    if (sigtype == 'niiconn') {
+      for (curr_map in 1:length(all_maps))
+        write.table(array(unlist(all_maps[curr_map]),dim=c(sqrt(length(unlist(all_maps[curr_map]))),sqrt(length(unlist(all_maps[curr_map]))))),file = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
+    }    
   setwd(curr_directory)
   all_time = proc.time() - initial_time
   cat("ConstructMarginalModel complete. Time elapsed", all_time[3],"s")
