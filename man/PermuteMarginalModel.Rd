@@ -20,7 +20,7 @@ PermuteMarginalModel(external_df, concfile, structtype, structfile,
 
 \item{concfile}{A character string denoting a single column text file that lists the dscalars in the same order as the external_df and wave frames.}
 
-\item{structtype}{A character string denoting whether the map is volumetric ('volume'), surface-based ('surface'), or a pconn ('pconn').}
+\item{structtype}{A character string denoting whether the map is volumetric ('volume'), surface-based ('surface'), a pconn ('pconn'), or a niiconn ('niiconn').}
 
 \item{structfile}{A character string denoting the structural map file, used for cluster detection on surfaces only.}
 

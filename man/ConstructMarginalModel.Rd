@@ -14,7 +14,7 @@ ConstructMarginalModel(external_df, concfile, structtype, structfile,
   norm_internal_data = TRUE, marginal_outputs = FALSE,
   marginal_matrix = NULL, enrichment_path = NULL, modules = NULL,
   wb_command = "wb_command", subsetfile = NULL,
-  permutation_directory = NULL)
+  permutation_directory = NULL, analysismode = "full")
 }
 \arguments{
 \item{external_df}{A data frame comprising non-brain measures to model. Can be specified as a string to a csv file with appropriate headers.}
@@ -74,6 +74,8 @@ ConstructMarginalModel(external_df, concfile, structtype, structfile,
 \item{subsetfile}{A character string denoting the path to a subset selection file, to select only a subset of the participants}
 
 \item{permutation_directory}{A character string denoting the path to the directory containing ONLY permutation tests. If set to NULL, permutation tests will be generated on the fly}
+
+\item{analysismode}{A character string denoting how much of the analysis to perform. Can be set to "full" to include cluster detection and permutation testing, or set to "statmaponly" to only output statistical maps}
 
 \item{fastSWE}{A boolean that determine the sandwhich estimator approach. If set to FALSE, will use standard R package geeglm. If set to TRUE will use custom-built estimator using rfast.}
 }

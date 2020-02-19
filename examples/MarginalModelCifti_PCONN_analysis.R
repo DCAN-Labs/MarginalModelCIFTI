@@ -191,8 +191,18 @@ modules = "/usr/local/CommunityChisquaredAnalysis/gordon_modules.csv"
 
 wb_command = "/usr/local/bin/wb_command"
 
+### The below variable is a string to a text file containing a subset of the subjects to run. The subject names must be unique and match what is found in the conc file. Can be set to NULL if unused.
+
+subsetfile = NULL
+
+### If permutations were run using PermuteMarginalModelCifti, the string below represents the PATH to where the permutations are stored as text files. ONLY those permutation files should be located in this directory.
+
+permutation_directory = NULL
+### The below variable is a string that tells the program whether to output everything ("full") or just the univariate marginal model statistics ("statmapsonly").
+
+analysismode = "full"
 ### With all the variables determined, you can now run the MarginalModel package using the `ConstructMarginalModel` command 
 
 
-all_maps  <- ConstructMarginalModel(external_df=external_df,concfile=concfile,structtype=structtype,structfile=structfile,matlab_path=matlab_path,surf_command=surf_command,wave=wave,notation=notation,zcor=zcor,corstr=corstr,family_dist=family_dist,dist_type=dist_type,z_thresh=z_thresh,nboot=nboot,p_thresh=p_thresh,sigtype=sigtype,id_subjects=id_subjects,output_directory=output_directory,ncores=ncores,fastSwE=fastSwE,adjustment=adjustment,norm_external_data=norm_external_data,norm_internal_data=norm_internal_data,marginal_outputs=marginal_outputs,marginal_matrix=marginal_matrix,enrichment_path=enrichment_path,modules=modules,wb_command=wb_command)
+all_maps  <- ConstructMarginalModel(external_df=external_df,concfile=concfile,structtype=structtype,structfile=structfile,matlab_path=matlab_path,surf_command=surf_command,wave=wave,notation=notation,zcor=zcor,corstr=corstr,family_dist=family_dist,dist_type=dist_type,z_thresh=z_thresh,nboot=nboot,p_thresh=p_thresh,sigtype=sigtype,id_subjects=id_subjects,output_directory=output_directory,ncores=ncores,fastSwE=fastSwE,adjustment=adjustment,norm_external_data=norm_external_data,norm_internal_data=norm_internal_data,marginal_outputs=marginal_outputs,marginal_matrix=marginal_matrix,enrichment_path=enrichment_path,modules=modules,wb_command=wb_command,subsetfile = subsetfile,permutation_directory = permutation_directory,analysismode=analysismode)
 
