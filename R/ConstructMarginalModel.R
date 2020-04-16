@@ -142,7 +142,8 @@ ConstructMarginalModel <- function(external_df,
       }
       if (is.null(wave[[id_subjects]]) == FALSE){
         print('matching id column found in longitudinal file -- proceeding with matching to external data for analysis')
-        new_wave <- wave[wave[[id_subjects]] %in% external_df[[id_subjects]],]
+        new_wave_temp <- wave[wave[[id_subjects]] %in% external_df[[id_subjects]],]
+        new_wave <- new_wave_temp[,!names(new_wave_temp) %in% id_subjects]
       }
     }
   }
