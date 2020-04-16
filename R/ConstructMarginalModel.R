@@ -44,7 +44,7 @@ ConstructMarginalModel <- function(external_df,
                                    matlab_path,
                                    surf_command,
                                    wave = NULL,
-                                   notation,
+                                   notation=formula(y~x),
                                    zcor = NULL,
                                    corstr = NULL,
                                    family_dist = NULL,
@@ -67,7 +67,8 @@ ConstructMarginalModel <- function(external_df,
                                    wb_command = 'wb_command',
                                    subsetfile = NULL,
                                    permutation_directory = NULL,
-                                   analysismode = 'full'){
+                                   analysismode = 'full',
+                                   checkorder = TRUE){
   initial_time = proc.time()
   require(purrr)
   require(cifti)
@@ -83,10 +84,11 @@ ConstructMarginalModel <- function(external_df,
   zeros_array = NULL
   curr_directory = getwd()
   setwd(output_directory)
+  print("reading imaging list")
   ciftilist <- read.csv(concfile,header=FALSE,col.names="file")
   if (is.null(subsetfile) == FALSE){
     subset_list <- read.csv(subsetfile,header=FALSE,col.names="subset")
-    print("parsing imaging list")
+    print("parsing subset list")
     list_bin_expanded <- sapply(1:length(subset_list$subset),
                     function(x) {
                       SubSelection(as.character(ciftilist$file),
@@ -98,6 +100,55 @@ ConstructMarginalModel <- function(external_df,
     new_ciftilist = list()
     new_ciftilist$file = ciftilist$file[list_bin]
     ciftilist = as.data.frame(new_ciftilist)
+  }
+  print("loading non-imaging data")
+  if (is.character(external_df)) {
+    external_df <- read.csv(external_df,header=TRUE)
+    if (is.null(subsetfile) == FALSE){
+      external_df <- external_df[list_bin,]
+    }
+  }
+  if (is.character(wave)) {
+    print("parsing longitudinal data")
+    wave <- read.csv(wave,header=TRUE)
+    if (is.null(subsetfile) == FALSE){
+      wave = wave[list_bin,]
+    }
+  }
+  if (checkorder == TRUE) {
+    print('checking conc file order against external data file')
+    list_order_expanded <- sapply(1:length(external_df[[id_subjects]]),
+                                function(x) {
+                                  SubSelection(as.character(ciftilist$file),
+                                               as.character(external_df[[id_subjects]][x])
+                                  )
+                                }
+    )
+    list_order = as.logical(rowsums(list_order_expanded))
+    if (sum(list_order) == 0) {
+      print('no subjects found -- perhaps your conc file path does not contain a matching subject id pattern?')
+    }
+    if (sum(list_order) > 0) {
+      new_ciftilist = list()
+      new_ciftilist$file = ciftilist$file[list_order]
+      ciftilist = as.data.frame(new_ciftilist)
+    }
+    print('conc order check completed')
+    if (is.character(wave)) {
+      print('comparing external data file and nested wave file')
+      if (is.null(wave[[id_subjects]]) == TRUE){
+        print('could not find matching subject id column in longitudinal file -- will assume order is correct but please check!!!!')
+        new_wave <- wave
+      }
+      if (is.null(wave[[id_subjects]]) == FALSE){
+        print('matching id column found in longitudinal file -- proceeding with matching to external data for analysis')
+        new_wave <- wave[wave[[id_subjects]] %in% external_df[[id_subjects]],]
+      }
+    }
+  }
+  if (checkorder == FALSE){
+    print('checking orders has been disabled -- please check your files!')
+    new_wave <- wave    
   }
   print("loading imaging data")
   start_load_time = proc.time()
@@ -190,38 +241,27 @@ ConstructMarginalModel <- function(external_df,
     }
     cifti_scalarmap <- as.data.frame(cifti_alldata)
   }
-  print("loading non-imaging data")
-  if (is.character(external_df)) {
-    external_df <- read.csv(external_df,header=TRUE)
-    if (is.null(subsetfile) == FALSE){
-      external_df <- external_df[list_bin,]
-    }
-    external_df <- external_df[cifti_nonans,]
-    df_nan <- FilterDFNA(external_df = external_df,notation = notation)
-    external_df = external_df[df_nan,]
-    if (structtype != "surface"){
+  print("parse non-imaging data")
+  external_df <- external_df[cifti_nonans,]
+  df_nan <- FilterDFNA(external_df = external_df,notation = notation)
+  external_df = external_df[df_nan,]
+  if (structtype != "surface"){
+    cifti_scalarmap = cifti_scalarmap[df_nan,]
+  }
+  if (structtype == "surface"){
+    if (fastSwE == FALSE) {
       cifti_scalarmap = cifti_scalarmap[df_nan,]
     }
-    if (structtype == "surface"){
-      if (fastSwE == FALSE) {
-        cifti_scalarmap = cifti_scalarmap[df_nan,]
-      }
-    }
-    cifti_alldata = cifti_alldata[df_nan,]
-    predictors <- attr(terms(notation),"term.labels")
-    measnames <- c("intercept",predictors)    
-    if (fastSwE == TRUE){
-      external_df <- ParseDf(external_df = external_df,notation = notation,norm_data=norm_external_data)
-      nmeas <- dim(external_df)[2]
-    }
+  }
+  cifti_alldata = cifti_alldata[df_nan,]
+  predictors <- attr(terms(notation),"term.labels")
+  measnames <- c("intercept",predictors)    
+  if (fastSwE == TRUE){
+    external_df <- ParseDf(external_df = external_df,notation = notation,norm_data=norm_external_data)
+    nmeas <- dim(external_df)[2]
   }
   if (is.character(wave)) {
-    print("loading longitudinal data")
-    wave <- read.csv(wave,header=TRUE)
-    wave <- DetermineNestedGroups(wave)
-    if (is.null(subsetfile) == FALSE){
-      wave = wave[list_bin]
-    }
+    wave <- DetermineNestedGroups(new_wave)
     wave = wave[cifti_nonans]
     wave = wave[df_nan]
   }
