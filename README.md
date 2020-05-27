@@ -24,7 +24,7 @@ Follow these steps to install the MarginalModelCifti package on your system, ign
 
 1) make a directory for the MarginalModelCifti package `mkdir ~/MarginalModelCifti`
 2) enter the directory `cd ~/MarginalModelCifti`
-3) clone the MarginalModelCifti repository `git clone https://gitlab.com/Fair_lab/marginalmodelcifti.git ./`
+3) clone the MarginalModelCifti repository `git clone https://github.com/DCAN-Labs/MarginalModelCIFTI.git ./`
 4) return to your initial home directory `cd ..`
 5) Type `R`
 6) After a prompt appears, make sure devtools is installed by typing `install.packages("devtools")`
