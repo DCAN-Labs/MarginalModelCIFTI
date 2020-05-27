@@ -666,11 +666,11 @@ ConstructMarginalModel <- function(external_df,
           writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
         }
       }  
-      if (sigtype == 'pconn') {
+      if (structtype == 'pconn') {
         for (curr_map in 1:length(all_maps))
           write.table(array(unlist(all_maps[curr_map]),dim=c(sqrt(length(unlist(all_maps[curr_map]))),sqrt(length(unlist(all_maps[curr_map]))))),file = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
       }
-      if (sigtype == 'niiconn') {
+      if (structtype == 'niiconn') {
         for (curr_map in 1:length(all_maps))
           write.table(array(unlist(all_maps[curr_map]),dim=c(sqrt(length(unlist(all_maps[curr_map]))),sqrt(length(unlist(all_maps[curr_map]))))),file = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
       }    
