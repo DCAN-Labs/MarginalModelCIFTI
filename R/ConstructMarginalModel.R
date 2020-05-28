@@ -667,12 +667,41 @@ ConstructMarginalModel <- function(external_df,
         }
       }  
       if (structtype == 'pconn') {
-        for (curr_map in 1:length(all_maps))
-          write.table(array(unlist(all_maps[curr_map]),dim=c(sqrt(length(unlist(all_maps[curr_map]))),sqrt(length(unlist(all_maps[curr_map]))))),file = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
+        if (sigtype == 'enrichment') {
+          for (curr_map in 1:length(all_maps)) {
+            write.table(array(unlist(all_maps[curr_map]),dim=c(sqrt(length(unlist(all_maps[curr_map]))),sqrt(length(unlist(all_maps[curr_map]))))),file = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
+          }
+        }
+        if (sigtype == 'point'){
+          for (curr_map in 1:dim(all_maps)[1]){
+            temp_mat <- Matrix2Vector(pconn_data = zeros_array,
+                                      pconn_vector = all_maps[curr_map,],
+                                      direction = "to_matrix")
+            WriteMatrixToCifti(metric_data = temp_mat,
+                               ncols = dim(temp_mat)[1],
+                               surf_template_file = as.character(ciftilist$file[1]),
+                               matlab_path = matlab_path,
+                               surf_command = surf_command,
+                               output_file = paste(output_directory,'/','pval_map_',measnames[curr_map],sep=""),
+                               wb_command = wb_command)
+          }
+        }
       }
       if (structtype == 'niiconn') {
-        for (curr_map in 1:length(all_maps))
-          write.table(array(unlist(all_maps[curr_map]),dim=c(sqrt(length(unlist(all_maps[curr_map]))),sqrt(length(unlist(all_maps[curr_map]))))),file = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
+        if (sigtype == 'enrichment') {        
+          for (curr_map in 1:length(all_maps)) {
+              write.table(array(unlist(all_maps[curr_map]),dim=c(sqrt(length(unlist(all_maps[curr_map]))),sqrt(length(unlist(all_maps[curr_map]))))),file = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
+          }
+        }
+        if (sigtype == 'point'){
+          for (curr_map in 1:dim(all_maps)[1]){
+            temp_map <- Matrix2Vector(pconn_data = zeros_array,
+                                      pconn_vector = all_maps[curr_map,],
+                                      direction = "to_matrix")
+            cifti_firstsub[] = temp_map
+            writeNIfTI(nim=cifti_firstsub,filename=paste(output_directory,'/','pval_map_',measnames[curr_map],sep=""))
+          }
+        }
       }    
     setwd(curr_directory)
     all_time = proc.time() - initial_time
