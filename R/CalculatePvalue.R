@@ -24,7 +24,7 @@ CalculatePvalue <- function(observed_cc,WB_cc,nboot,sigtype){
     }
   }     
   if(sigtype == 'point'){
-    p <- sum(abs(WB_cc) > observed_cc)/nboot
+    p <- sum(WB_cc > abs(observed_cc))/nboot
     if (p == 0) {
       p <- 1/nboot
     }   
