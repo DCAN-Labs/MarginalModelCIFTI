@@ -625,6 +625,17 @@ ConstructMarginalModel <- function(external_df,
         cat("aggregation complete. Time elapsed",finish_perm_time[3],"s")
       }
       print("calculating p values for observed data using null distribution(s)")
+      if (is.null(sigtype)) {
+        for (curr_meas in 1:nmeas){
+          pval_map <- map(zscore_map[curr_meas,],CalculatePvalue,WB_cc=NaN,nboot=NaN,sigtype=sigtype)
+          if (curr_meas == 1){
+            all_maps = pval_map
+          } else
+          {
+            all_maps <- list(all_maps,pval_map)
+          }
+        }        
+      }      
       if (sigtype == 'cluster'){
         for (curr_meas in 1:nmeas){
           pval_map <- map(all_cc[,curr_meas],CalculatePvalue,WB_cc=WB_cc[curr_meas,],nboot=nboot,sigtype=sigtype)
@@ -637,7 +648,15 @@ ConstructMarginalModel <- function(external_df,
         }
       }
       if (sigtype == 'point'){
-        all_maps <- map(zscore_map,CalculatePvalue,WB_cc=NaN,nboot=NaN,sigtype=sigtype)
+        for (curr_meas in 1:nmeas){
+          pval_map <- map(zscore_map[curr_meas,],CalculatePvalue,WB_cc=WB_cc[curr_meas,],nboot=nboot,sigtype=sigtype)
+          if (curr_meas == 1){
+            all_maps = pval_map
+          } else
+          {
+            all_maps <- list(all_maps,pval_map)
+          }
+        }
       }
       if (sigtype == 'enrichment'){
         for (curr_meas in 1:nmeas){
@@ -671,8 +690,8 @@ ConstructMarginalModel <- function(external_df,
           for (curr_map in 1:length(all_maps)) {
             write.table(array(unlist(all_maps[curr_map]),dim=c(sqrt(length(unlist(all_maps[curr_map]))),sqrt(length(unlist(all_maps[curr_map]))))),file = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
           }
-        }
-        if (sigtype == 'point'){
+        } else
+        {
           for (curr_map in 1:dim(all_maps)[1]){
             temp_mat <- Matrix2Vector(pconn_data = zeros_array,
                                       pconn_vector = all_maps[curr_map,],
@@ -692,8 +711,8 @@ ConstructMarginalModel <- function(external_df,
           for (curr_map in 1:length(all_maps)) {
               write.table(array(unlist(all_maps[curr_map]),dim=c(sqrt(length(unlist(all_maps[curr_map]))),sqrt(length(unlist(all_maps[curr_map]))))),file = paste(output_directory,'/','observed_cluster_pval_',measnames[curr_map],sep=""))
           }
-        }
-        if (sigtype == 'point'){
+        } else
+        {
           for (curr_map in 1:dim(all_maps)[1]){
             temp_map <- Matrix2Vector(pconn_data = zeros_array,
                                       pconn_vector = all_maps[curr_map,],
