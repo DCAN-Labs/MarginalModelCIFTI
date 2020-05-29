@@ -694,7 +694,7 @@ ConstructMarginalModel <- function(external_df,
         {
           for (curr_map in 1:length(all_maps)){
             temp_mat <- Matrix2Vector(pconn_data = zeros_array,
-                                      pconn_vector = all_maps[curr_map],
+                                      pconn_vector = unlist(all_maps[curr_map]),
                                       direction = "to_matrix")
             WriteMatrixToCifti(metric_data = temp_mat,
                                ncols = dim(temp_mat)[1],
@@ -715,7 +715,7 @@ ConstructMarginalModel <- function(external_df,
         {
           for (curr_map in 1:length(all_maps)){
             temp_map <- Matrix2Vector(pconn_data = zeros_array,
-                                      pconn_vector = all_maps[curr_map],
+                                      pconn_vector = unlist(all_maps[curr_map]),
                                       direction = "to_matrix")
             cifti_firstsub[] = temp_map
             writeNIfTI(nim=cifti_firstsub,filename=paste(output_directory,'/','pval_map_',measnames[curr_map],sep=""))
