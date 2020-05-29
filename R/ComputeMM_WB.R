@@ -122,7 +122,11 @@ ComputeMM_WB <- function(x,resid_map,
       print(unique(thresh_bootmap[2,]))
     }
   if (correctiontype=='point') {
-    return(max(zscore_bootmap))
+    all_cc = list(1:nmeas)
+    for (curr_meas in 1:nmeas){
+      all_cc[curr_meas] = max(zscore_bootmap,na.rm=TRUE)
+    }
+    return(all_cc)
   }
   else if (correctiontype=='cluster'){
     all_cc = list(1:nmeas)
