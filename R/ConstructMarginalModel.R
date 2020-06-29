@@ -375,9 +375,11 @@ ConstructMarginalModel <- function(external_df,
         }
       }
     }
+    print("Finshed beta map outputs")
     resid_map <- cifti_map$residuals
     fit_map <- cifti_map$fitted.values
     Nelm <- dim(beta_map)[2]
+    print("running fast sandwich estimator")
     t_map <- ComputeFastSwE(X=external_df,nested=wave,Nelm=Nelm,resid_map=resid_map,npredictors=nmeas,beta_map=beta_map,adjustment=adjustment)
     if (structtype == 'surface'){
       for (curr_map in 1:dim(t_map)[1]){

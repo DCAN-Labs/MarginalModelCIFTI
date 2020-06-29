@@ -42,7 +42,7 @@ ComputeFastSwE <- function(X,nested,Nelm,resid_map,npredictors,beta_map,adjustme
   {
     Nnest <- max(nested)
     Svec   = array(0,dim=c(npredictors,npredictors,Nelm,length(unique(nested))))
-    S <- RecursiveNested(iter=1,nests=1:Nnest,
+    S <- RecursiveNested(iter=1,nests=sort(unique(nested)),
                   nested=nested,
                   datavec=Nelm,
                   Sinit=S0,
