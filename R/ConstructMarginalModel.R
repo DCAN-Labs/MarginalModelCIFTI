@@ -102,14 +102,18 @@ ConstructMarginalModel <- function(external_df,
     ciftilist = as.data.frame(new_ciftilist)
   }
   print("loading non-imaging data")
+  external_df_file = FALSE
   if (is.character(external_df)) {
+    external_df_file = TRUE
     external_df <- read.csv(external_df,header=TRUE)
     if (is.null(subsetfile) == FALSE){
       external_df <- external_df[list_bin,]
     }
   }
+  wave_file = FALSE
   if (is.character(wave)) {
     print("parsing longitudinal data")
+    wave_file = TRUE
     wave <- read.csv(wave,header=TRUE)
     if (is.null(subsetfile) == FALSE){
       wave = wave[list_bin,]
@@ -134,7 +138,7 @@ ConstructMarginalModel <- function(external_df,
       ciftilist = as.data.frame(new_ciftilist)
     }
     print('conc order check completed')
-    if (is.character(wave)) {
+    if (wave_file) {
       print('comparing external data file and nested wave file')
       if (is.null(wave[[id_subjects]]) == TRUE){
         print('could not find matching subject id column in longitudinal file -- will assume order is correct but please check!!!!')
@@ -261,7 +265,7 @@ ConstructMarginalModel <- function(external_df,
     external_df <- ParseDf(external_df = external_df,notation = notation,norm_data=norm_external_data)
     nmeas <- dim(external_df)[2]
   }
-  if (is.character(wave)) {
+  if (wave_file) {
     wave <- DetermineNestedGroups(new_wave)
     wave = wave[cifti_nonans]
     wave = wave[df_nan]
