@@ -4,8 +4,15 @@
 \alias{WriteMatrixToCifti}
 \title{WriteMatrixToCifti -- Output an R array matrix into an appropriate CIFTI format}
 \usage{
-WriteMatrixToCifti(metric_data, ncols, surf_template_file, matlab_path,
-  surf_command, output_file, wb_command)
+WriteMatrixToCifti(
+  metric_data,
+  ncols,
+  surf_template_file,
+  matlab_path,
+  surf_command,
+  output_file,
+  wb_command
+)
 }
 \arguments{
 \item{ncols}{The number of columns in the matrix -- used to write the array to a text file}

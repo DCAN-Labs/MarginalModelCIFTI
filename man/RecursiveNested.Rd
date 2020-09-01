@@ -4,8 +4,19 @@
 \alias{RecursiveNested}
 \title{RecursiveNested -- a recursive function that will calculate the sandwich estimator errors controlling for a blocked variable (e.g. within family/school/age)}
 \usage{
-RecursiveNested(iter, nests, nested, datavec, Sinit, residarray, Breadvec,
-  npred, adjustment, X, Sb)
+RecursiveNested(
+  iter,
+  nests,
+  nested,
+  datavec,
+  Sinit,
+  residarray,
+  Breadvec,
+  npred,
+  adjustment,
+  X,
+  Sb
+)
 }
 \arguments{
 \item{iter}{The current iteration, when called it should be set to 1.}

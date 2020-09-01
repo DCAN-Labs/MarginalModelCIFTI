@@ -4,8 +4,7 @@
 \alias{ComputeFastSwE}
 \title{ComputeFastSwE -- a fast function to calculate errors via the sandwich estimator. Modified from Tom Nichols, Feb 1, 2019}
 \usage{
-ComputeFastSwE(X, nested, Nelm, resid_map, npredictors, beta_map,
-  adjustment)
+ComputeFastSwE(X, nested, Nelm, resid_map, npredictors, beta_map, adjustment)
 }
 \arguments{
 \item{X}{The predictor data recast as a matrix}

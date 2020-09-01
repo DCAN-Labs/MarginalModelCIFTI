@@ -4,8 +4,7 @@
 \alias{Matrix2Vector}
 \title{Matrix2Vector -- a function that will map a matrix to a vector and vice versa}
 \usage{
-Matrix2Vector(pconn_data = NULL, pconn_vector = NULL,
-  direction = "to_vector")
+Matrix2Vector(pconn_data = NULL, pconn_vector = NULL, direction = "to_vector")
 }
 \arguments{
 \item{pconn_data}{The pconn matrix represented as a 2D matrix}

@@ -4,8 +4,13 @@
 \alias{WriteVectorToGifti}
 \title{WriteVectorToGifti -- Output an R data vector into an appropriate GIFTI format}
 \usage{
-WriteVectorToGifti(metric_data, surf_template_file, matlab_path,
-  surf_command, output_file)
+WriteVectorToGifti(
+  metric_data,
+  surf_template_file,
+  matlab_path,
+  surf_command,
+  output_file
+)
 }
 \arguments{
 \item{metric_data}{A numeric vector containing any values. Indexing must match the template file}

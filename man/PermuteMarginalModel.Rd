@@ -4,16 +4,37 @@
 \alias{PermuteMarginalModel}
 \title{PermuteMarginalModel -- This permutation function that will perform a wild bootstrap for a marginalmodel analysis and output the permutations to a text file.}
 \usage{
-PermuteMarginalModel(external_df, concfile, structtype, structfile,
-  matlab_path, surf_command, wave = NULL, notation, zcor = NULL,
-  corstr = NULL, family_dist = NULL, dist_type = "radenbacher",
-  z_thresh = 2.3, nboot = 1000, p_thresh = 0.5,
-  sigtype = "cluster", id_subjects = "subid",
-  output_directory = "~/", fastSwE = TRUE, adjustment = NULL,
-  norm_external_data = TRUE, norm_internal_data = TRUE,
-  marginal_outputs = FALSE, marginal_matrix = NULL,
-  enrichment_path = NULL, modules = NULL, wb_command = "wb_command",
-  subsetfile = NULL, output_permfile = "~/permfile.txt")
+PermuteMarginalModel(
+  external_df,
+  concfile,
+  structtype,
+  structfile,
+  matlab_path,
+  surf_command,
+  wave = NULL,
+  notation,
+  zcor = NULL,
+  corstr = NULL,
+  family_dist = NULL,
+  dist_type = "radenbacher",
+  z_thresh = 2.3,
+  nboot = 1000,
+  p_thresh = 0.5,
+  sigtype = "cluster",
+  id_subjects = "subid",
+  output_directory = "~/",
+  fastSwE = TRUE,
+  adjustment = NULL,
+  norm_external_data = TRUE,
+  norm_internal_data = TRUE,
+  marginal_outputs = FALSE,
+  marginal_matrix = NULL,
+  enrichment_path = NULL,
+  modules = NULL,
+  wb_command = "wb_command",
+  subsetfile = NULL,
+  output_permfile = "~/permfile.txt"
+)
 }
 \arguments{
 \item{external_df}{A data frame comprising non-brain measures to model. Can be specified as a string to a csv file with appropriate headers.}

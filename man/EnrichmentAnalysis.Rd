@@ -4,8 +4,15 @@
 \alias{EnrichmentAnalysis}
 \title{WriteMatrixToCifti -- Output an R array matrix into an appropriate CIFTI format}
 \usage{
-EnrichmentAnalysis(metric_data, ncols, modules, matlab_path,
-  enrichment_path, output_file, tempname)
+EnrichmentAnalysis(
+  metric_data,
+  ncols,
+  modules,
+  matlab_path,
+  enrichment_path,
+  output_file,
+  tempname
+)
 }
 \arguments{
 \item{metric_data}{A binarized matrix}
