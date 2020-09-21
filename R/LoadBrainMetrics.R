@@ -9,7 +9,7 @@
 #' cifti_data <- LoadBrainMetrics(cifitilist,structtype)
 #'
    
-CiftiInputs <- function(ciftilist,structtype) {
+LoadBrainMetrics <- function(ciftilist,structtype) {
   CiftiInputs = list()
   require(cifti)
   require(gifti)
