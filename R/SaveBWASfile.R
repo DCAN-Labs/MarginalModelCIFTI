@@ -6,6 +6,7 @@
 #' @param output_prefix A character string depicting the prefix of the output filenames, usually depicting the map metric
 #' @param measnames A list of measures (covariates) being tested by the model, used to label the maps appropriately.
 #' @param surf_command A path to the SurfConnectivity toolbox used to perform CIFTI/GIFTI writing
+#' @param surf_template_file A path to a surface template file to use for CIFTI/GIFTI writing
 #' @param wb_command A full path/filename to thte wb_command file, used for ciftis
 #' @param zeros_array A 2D array filled with zeros representing the initial structure for pconns and niicons, used to speed up file-saving
 #' @param matlab_path A full path/filename to the matlab runtime compiler engine, must be V91
@@ -20,6 +21,7 @@ SaveBWASfile <- function(BWAS_statmap,
                       output_prefix,
                       measnames,
                       surf_command=NULL,
+                      surf_template_file=NULL,
                       wb_command=NULL,
                       zeros_array=NULL,
                       matlab_path=NULL,
@@ -32,7 +34,7 @@ SaveBWASfile <- function(BWAS_statmap,
   if (structtype == 'surface'){
     for (curr_map in 1:dim(BWAS_statmap)[1]){
       WriteVectorToGifti(metric_data = BWAS_statmap[curr_map,],
-                         surf_template_file = as.character(ciftilist[1,1]),
+                         surf_template_file = surf_template_file,
                          surf_command = surf_command,
                          matlab_path = matlab_path,
                          output_file = paste(output_directory,'/',output_prefix,measnames[curr_map],'.func.gii',sep=""))      
@@ -58,7 +60,7 @@ SaveBWASfile <- function(BWAS_statmap,
                                   direction = "to_matrix")
         WriteMatrixToCifti(metric_data = temp_mat,
                            ncols = dim(temp_mat)[1],
-                           surf_template_file = as.character(ciftilist$file[1]),
+                           surf_template_file = surf_template_file,
                            matlab_path = matlab_path,
                            surf_command = surf_command,
                            output_file = paste(output_directory,'/',output_prefix,measnames[curr_map],sep=""),

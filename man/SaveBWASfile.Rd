@@ -10,6 +10,7 @@ SaveBWASfile(
   output_prefix,
   measnames,
   surf_command = NULL,
+  surf_template_file = NULL,
   wb_command = NULL,
   zeros_array = NULL,
   matlab_path = NULL,
@@ -26,6 +27,8 @@ SaveBWASfile(
 \item{measnames}{A list of measures (covariates) being tested by the model, used to label the maps appropriately.}
 
 \item{surf_command}{A path to the SurfConnectivity toolbox used to perform CIFTI/GIFTI writing}
+
+\item{surf_template_file}{A path to a surface template file to use for CIFTI/GIFTI writing}
 
 \item{wb_command}{A full path/filename to thte wb_command file, used for ciftis}
 
