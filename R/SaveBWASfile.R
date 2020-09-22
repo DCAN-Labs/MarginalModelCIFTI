@@ -15,7 +15,7 @@
 #' @examples
 #' SaveBWASfile(BWAS_statmap,structtype,output_prefix,measnames)
 #'
-SaveBwasfile <- function(BWAS_statmap,
+SaveBWASfile <- function(BWAS_statmap,
                       structtype,
                       output_prefix,
                       measnames,
