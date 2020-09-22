@@ -171,7 +171,7 @@ ConstructMarginalModel <- function(external_df,
   zeros_array = CiftiInputs$zeros_array
   cifti_nonans = CiftiInputs$nonans
   cifti_dim = CiftiInputs$cifti_dim
-  surf_tempate_file=as.character(ciftilist$file[1])
+  surf_template_file=as.character(ciftilist$file[1])
   print("parse non-imaging data")
   external_df <- external_df[cifti_nonans,]
   df_nan <- FilterDFNA(external_df = external_df,notation = notation)
@@ -222,7 +222,7 @@ ConstructMarginalModel <- function(external_df,
     cifti_map <- lm.fit(external_df,cifti_alldata)
     beta_map <- cifti_map$coefficients
     SaveBWASfile(BWAS_statmap=beta_map,structtype=structtype,
-                 surf_tempate_file=surf_tempate_file,
+                 surf_template_file=surf_template_file,
                  output_prefix='beta_map_',measnames=measnames,
                  surf_command=surf_command,wb_command=wb_command,
                  zeros_array=zeros_array,matlab_path=matlab_path)
@@ -232,7 +232,7 @@ ConstructMarginalModel <- function(external_df,
         marginal_map[curr_marginal,] <- sapply(1:dim(beta_map)[2],function(x){CalculateMarginalValue(beta_map[,x],marginal_matrix[curr_marginal,])})
       }
       SaveBWASfile(BWAS_statmap=marginal_map,structtype=structtype,
-                   surf_tempate_file=surf_tempate_file,
+                   surf_template_file=surf_template_file,
                    output_prefix='marginal_map_',measnames=measnames,
                    surf_command=surf_command,wb_command=wb_command,
                    zeros_array=zeros_array,matlab_path=matlab_path)
@@ -244,7 +244,7 @@ ConstructMarginalModel <- function(external_df,
     print("running fast sandwich estimator")
     t_map <- ComputeFastSwE(X=external_df,nested=wave,Nelm=Nelm,resid_map=resid_map,npredictors=nmeas,beta_map=beta_map,adjustment=adjustment)
     SaveBWASfile(BWAS_statmap=t_map,structtype=structtype,
-                 surf_tempate_file=surf_tempate_file,
+                 surf_template_file=surf_template_file,
                  output_prefix='t_map_',measnames=measnames,
                  surf_command=surf_command,wb_command=wb_command,
                  zeros_array=zeros_array,matlab_path=matlab_path)
@@ -254,7 +254,7 @@ ConstructMarginalModel <- function(external_df,
     print("Normalizing observed marginal model estimates")
     zscore_map <- t(sapply(1:nmeas,function(x) {(t_map[x,] - mean(t_map[x,is.finite(t_map[x,])]))/sd(t_map[x,is.finite(t_map[x,])])}))
     SaveBWASfile(BWAS_statmap=zscore_map,structtype=structtype,
-                 surf_tempate_file=surf_tempate_file,
+                 surf_template_file=surf_template_file,
                  output_prefix='zscore_map_',measnames=measnames,
                  surf_command=surf_command,wb_command=wb_command,
                  zeros_array=zeros_array,matlab_path=matlab_path)
@@ -262,7 +262,7 @@ ConstructMarginalModel <- function(external_df,
     thresh_map <- t(sapply(1:nmeas,function(x) abs(zscore_map[x,]) > z_thresh))
     thresh_map[is.na(thresh_map)] <- NaN
     SaveBWASfile(BWAS_statmap=thresh_map,structtype=structtype,
-                 surf_tempate_file=surf_tempate_file,
+                 surf_template_file=surf_template_file,
                  output_prefix='thresh_map_',measnames=measnames,
                  surf_command=surf_command,wb_command=wb_command,
                  zeros_array=zeros_array,matlab_path=matlab_path)      
@@ -295,7 +295,7 @@ ConstructMarginalModel <- function(external_df,
         }
       }
       SaveBWASfile(BWAS_statmap=all_cc,structtype=structtype,
-                   surf_tempate_file=surf_tempate_file,
+                   surf_template_file=surf_template_file,
                    output_prefix='observed_clusters_',measnames=measnames,
                    surf_command=surf_command,wb_command=wb_command,
                    zeros_array=zeros_array,matlab_path=matlab_path)
@@ -420,7 +420,7 @@ ConstructMarginalModel <- function(external_df,
         }
       }
     SaveBWASfile(BWAS_statmap=all_maps,structtype=structtype,
-                 surf_tempate_file=surf_tempate_file,
+                 surf_template_file=surf_template_file,
                  output_prefix='pval_map_',measnames=measnames,
                  surf_command=surf_command,wb_command=wb_command,
                  zeros_array=zeros_array,matlab_path=matlab_path,sigtype=sigtype)
