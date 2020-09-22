@@ -156,4 +156,5 @@ LoadBrainMetrics <- function(ciftilist,structtype) {
   CiftiInputs$zeros_array = zeros_array
   CiftiInputs$nonans = cifti_nonans
   CiftiInputs$cifti_dim = cifti_dim
+  return(CiftiInputs)
 }
