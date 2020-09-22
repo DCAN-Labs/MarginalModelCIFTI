@@ -23,7 +23,7 @@ SaveBWASfile <- function(BWAS_statmap,
                       wb_command=NULL,
                       zeros_array=NULL,
                       matlab_path=NULL,
-                      sigtype=NULL) {
+                      sigtype='NULL') {
   require(cifti)
   require(gifti)
   require(geepack)
