@@ -42,18 +42,28 @@ ComputeFastSwE <- function(X,nested,Nelm,resid_map,npredictors,beta_map,adjustme
   {
     Nnest <- max(nested)
     Svec   = array(0,dim=c(npredictors,npredictors,Nelm,length(unique(nested))))
-    S <- RecursiveNested(iter=1,nests=sort(unique(nested)),
-                  nested=nested,
-                  datavec=Nelm,
-                  Sinit=S0,
-                  residarray=resid_map,
-                  Breadvec=BreadX,
-                  npred=npredictors,
-                  adjustment=adjustment,
-                  X=X,
-                  S)
+    Svec[] <- apply(array(1:Nschool),1,function(nest,
+                                                nested=nested,datavec=Nelm,
+                                                Sinit=S0,residarray=resid_map,
+                                                Breadvec=BreadX,
+                                                npred=npredictors,
+                                                adjustment=adjustment) {
+      I=(nest==nested)
+      Ns=sum(I)
+      # half of Meat times t(Breadvec) -- incorporate adjustments here
+      if (is.null(adjustment)){
+        e = array(residarray[I,],c(1,Ns,datavec))
+      } else if (adjustment == "HC2"){
+        e = array(residarray[I,]/sqrt(1 - hat_adjust),c(1,Ns,datavec))
+      } else if (adjustment == "HC3"){
+        e = array(residarray[I,]/(1 - hat_adjust),c(1,Ns,datavec))
+      }      
+      Sinit[] = apply(e,3,function(x)x%*%t(Breadvec[,I]))
+      Sb = array(apply(Sinit,3,function(x)t(x)%*%x),dim=c(npred,npred,datavec))
+      return(Sb)
+    })
+  S <- apply(Svec,c(1,2,3),sum)
   }
-  
   SE.swe[]=sqrt(apply(S,3,diag))
   T.swe = beta_map/SE.swe
   return(T.swe)
