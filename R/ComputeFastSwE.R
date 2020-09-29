@@ -36,33 +36,27 @@ ComputeFastSwE <- function(X,nested,Nelm,resid_map,npredictors,beta_map,adjustme
     Ns = dim(X)[1]
     e = array(resid_map,c(1,Ns,Nelm))
     S0[] = apply(e,3,function(x)x%*%t(BreadX))
-    # Full `Bread*Meat*Bread' contribution for school s
+    # Full `Bread*Meat*Bread' contribution
     S = S + array(apply(S0,3,function(x)t(x)%*%x),dim=c(npredictors,npredictors,Nelm))
   } else
   {
     Nnest <- max(nested)
-    Svec   = array(0,dim=c(npredictors,npredictors,Nelm,length(unique(nested))))
-    Svec[] <- apply(array(1:Nschool),1,function(nest,
-                                                nested=nested,datavec=Nelm,
-                                                Sinit=S0,residarray=resid_map,
-                                                Breadvec=BreadX,
-                                                npred=npredictors,
-                                                adjustment=adjustment) {
-      I=(nest==nested)
+    for (s in 1:Nnest) {
+      I=(s==Nnest)
       Ns=sum(I)
-      # half of Meat times t(Breadvec) -- incorporate adjustments here
       if (is.null(adjustment)){
-        e = array(residarray[I,],c(1,Ns,datavec))
+        e = array(resid_map[I,],c(1,Ns,Nelm))
       } else if (adjustment == "HC2"){
-        e = array(residarray[I,]/sqrt(1 - hat_adjust),c(1,Ns,datavec))
+        e = array(resid_map[I,]/sqrt(1 - hat_adjust),c(1,Ns,Nelm))
       } else if (adjustment == "HC3"){
-        e = array(residarray[I,]/(1 - hat_adjust),c(1,Ns,datavec))
-      }      
-      Sinit[] = apply(e,3,function(x)x%*%t(Breadvec[,I]))
-      Sb = array(apply(Sinit,3,function(x)t(x)%*%x),dim=c(npred,npred,datavec))
-      return(Sb)
-    })
-  S <- apply(Svec,c(1,2,3),sum)
+        e = array(resid_map[I,]/(1 - hat_adjust),c(1,Ns,Nelm))
+      }
+      # half of Meat times t(BreadX)
+      e = array(res[I,],c(1,Ns,Nelm))
+      S0[] = apply(e,3,function(x)x%*%t(BreadX[,I]))
+      # Full `Bread*Meat*Bread' contribution for nest s
+      S = S + array(apply(S0,3,function(x)t(x)%*%x),dim=c(npredictors,npredictors,Nelm))
+    }
   }
   SE.swe[]=sqrt(apply(S,3,diag))
   T.swe = beta_map/SE.swe
