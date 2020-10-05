@@ -52,7 +52,7 @@ ComputeFastSwE <- function(X,nested,Nelm,resid_map,npredictors,beta_map,adjustme
         e = array(resid_map[I,]/(1 - hat_adjust),c(1,Ns,Nelm))
       }
       # half of Meat times t(BreadX)
-      e = array(res[I,],c(1,Ns,Nelm))
+      e = array(resid_map[I,],c(1,Ns,Nelm))
       S0[] = apply(e,3,function(x)x%*%t(BreadX[,I]))
       # Full `Bread*Meat*Bread' contribution for nest s
       S = S + array(apply(S0,3,function(x)t(x)%*%x),dim=c(npredictors,npredictors,Nelm))
