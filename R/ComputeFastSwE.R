@@ -35,7 +35,12 @@ ComputeFastSwE <- function(X,nested,Nelm,resid_map,npredictors,beta_map,adjustme
     }
     Ns = dim(X)[1]
     e = array(resid_map,c(1,Ns,Nelm))
-    S0[] = apply(e,3,function(x)x%*%t(BreadX))
+    if (npredictors==1){
+      S0[] = apply(e,3,function(x)x%*%(BreadX))
+    } else
+    {
+      S0[] = apply(e,3,function(x)x%*%t(BreadX))
+    }
     # Full `Bread*Meat*Bread' contribution
     S = S + array(apply(S0,3,function(x)t(x)%*%x),dim=c(npredictors,npredictors,Nelm))
   } else
