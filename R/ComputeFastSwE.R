@@ -47,7 +47,7 @@ ComputeFastSwE <- function(X,nested,Nelm,resid_map,npredictors,beta_map,adjustme
   {
     Nnest <- max(nested)
     for (s in 1:Nnest) {
-      I=(s==Nnest)
+      I=(s==nested)
       Ns=sum(I)
       if (is.null(adjustment)){
         e = array(resid_map[I,],c(1,Ns,Nelm))
