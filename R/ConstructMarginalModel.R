@@ -379,10 +379,10 @@ ConstructMarginalModel <- function(external_df,
         for (curr_meas in 1:nmeas){
           pval_map <- map(zscore_map[curr_meas,],CalculatePvalue,WB_cc=NaN,nboot=NaN,sigtype=sigtype)
           if (curr_meas == 1){
-            all_maps = pval_map
+            all_maps = list(pval_map)
           } else
           {
-            all_maps <- list(all_maps,pval_map)
+            all_maps <- append(all_maps,list(pval_map))
           }
         }        
       }      
@@ -390,10 +390,10 @@ ConstructMarginalModel <- function(external_df,
         for (curr_meas in 1:nmeas){
           pval_map <- map(all_cc[,curr_meas],CalculatePvalue,WB_cc=WB_cc[curr_meas,],nboot=nboot,sigtype=sigtype)
           if (curr_meas == 1){
-            all_maps = pval_map
+            all_maps = list(pval_map)
           } else
           {
-            all_maps <- list(all_maps,pval_map)
+            all_maps <- append(all_maps,list(pval_map))
           }
         }
       }
@@ -401,10 +401,10 @@ ConstructMarginalModel <- function(external_df,
         for (curr_meas in 1:nmeas){
           pval_map <- map(zscore_map[curr_meas,],CalculatePvalue,WB_cc=WB_cc[curr_meas,],nboot=nboot,sigtype=sigtype)
           if (curr_meas == 1){
-            all_maps = pval_map
+            all_maps = list(pval_map)
           } else
           {
-            all_maps <- list(all_maps,pval_map)
+            all_maps <- append(all_maps,list(pval_map))
           }
         }
       }
@@ -412,10 +412,10 @@ ConstructMarginalModel <- function(external_df,
         for (curr_meas in 1:nmeas){
           pval_map <- map(all_cc[,,curr_meas],CalculatePvalue,WB_cc=WB_cc[curr_meas,],nboot=nboot,sigtype=sigtype)
           if (curr_meas == 1){
-            all_maps = pval_map
+            all_maps = list(pval_map)
           } else
           {
-            all_maps <- list(all_maps,pval_map)
+            all_maps <- append(all_maps,list(pval_map))
           }
         }
       }
