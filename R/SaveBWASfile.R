@@ -11,6 +11,7 @@
 #' @param zeros_array A 2D array filled with zeros representing the initial structure for pconns and niicons, used to speed up file-saving
 #' @param matlab_path A full path/filename to the matlab runtime compiler engine, must be V91
 #' @param sigtype A character string denoting whether the map is volumetric ('volume'), surface-based ('surface'), a pconn ('pconn'), or a NIFTI connectivity matrix ('niiconn').
+#' @param output_directory A character string denoting the full path to the output directory for the file
 #' @keywords wild bootstrap sandwich estimator marginal model CIFTI scalar
 #' @export
 #' @examples
@@ -25,12 +26,15 @@ SaveBWASfile <- function(BWAS_statmap,
                       wb_command=NULL,
                       zeros_array=NULL,
                       matlab_path=NULL,
-                      sigtype='NULL') {
+                      sigtype='NULL',
+                      output_directory='./') {
   require(cifti)
   require(gifti)
   require(geepack)
   require(Matrix)
-  require(oro.nifti)    
+  require(oro.nifti)
+  require(R.matlab)
+  require(SparseM)
   if (structtype == 'surface'){
     for (curr_map in 1:dim(BWAS_statmap)[1]){
       WriteVectorToGifti(metric_data = BWAS_statmap[curr_map,],

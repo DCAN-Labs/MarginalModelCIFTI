@@ -15,7 +15,9 @@ LoadBrainMetrics <- function(ciftilist,structtype) {
   require(gifti)
   require(geepack)
   require(Matrix)
-  require(oro.nifti)  
+  require(oro.nifti)
+  require(R.matlab)
+  require(SparseM)
   if (structtype == 'volume'){
     zeros_array = NULL
     cifti_file <- PrepVolMetric(as.character(ciftilist$file[1]))

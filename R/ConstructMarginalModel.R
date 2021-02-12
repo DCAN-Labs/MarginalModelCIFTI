@@ -80,6 +80,8 @@ ConstructMarginalModel <- function(external_df,
   require(parallel)
   require(Rfast)
   require(stringr)
+  require(R.matlab)
+  require(SparseM)
   cifti_firstsub= NULL
   zeros_array = NULL
   curr_directory = getwd()
@@ -225,7 +227,8 @@ ConstructMarginalModel <- function(external_df,
                  surf_template_file=surf_template_file,
                  output_prefix='beta_map_',measnames=measnames,
                  surf_command=surf_command,wb_command=wb_command,
-                 zeros_array=zeros_array,matlab_path=matlab_path)
+                 zeros_array=zeros_array,matlab_path=matlab_path,
+                 output_directory=output_directory)
     if (marginal_outputs == TRUE){
       marginal_map = array(data = 0, dim = c(dim(marginal_matrix)[1],dim(beta_map)[2]))
       for (curr_marginal in 1:dim(marginal_matrix)[1]){
@@ -235,7 +238,8 @@ ConstructMarginalModel <- function(external_df,
                    surf_template_file=surf_template_file,
                    output_prefix='marginal_map_',measnames=measnames,
                    surf_command=surf_command,wb_command=wb_command,
-                   zeros_array=zeros_array,matlab_path=matlab_path)
+                   zeros_array=zeros_array,matlab_path=matlab_path,
+                   output_directory=output_directory)
     }
     print("Finshed beta map outputs")
     resid_map <- cifti_map$residuals
@@ -247,7 +251,8 @@ ConstructMarginalModel <- function(external_df,
                  surf_template_file=surf_template_file,
                  output_prefix='t_map_',measnames=measnames,
                  surf_command=surf_command,wb_command=wb_command,
-                 zeros_array=zeros_array,matlab_path=matlab_path)
+                 zeros_array=zeros_array,matlab_path=matlab_path,
+                 output_directory=output_directory)
     finish_model_time = proc.time() - start_model_time
     cat("modeling complete. Time elapsed: ",finish_model_time[3],"s")
     start_normthresh_time = proc.time()
@@ -257,7 +262,8 @@ ConstructMarginalModel <- function(external_df,
                  surf_template_file=surf_template_file,
                  output_prefix='zscore_map_',measnames=measnames,
                  surf_command=surf_command,wb_command=wb_command,
-                 zeros_array=zeros_array,matlab_path=matlab_path)
+                 zeros_array=zeros_array,matlab_path=matlab_path,
+                 output_directory=output_directory)
     print("thresholding observed z scores")
     thresh_map <- t(sapply(1:nmeas,function(x) abs(zscore_map[x,]) > z_thresh))
     thresh_map[is.na(thresh_map)] <- NaN
@@ -265,7 +271,8 @@ ConstructMarginalModel <- function(external_df,
                  surf_template_file=surf_template_file,
                  output_prefix='thresh_map_',measnames=measnames,
                  surf_command=surf_command,wb_command=wb_command,
-                 zeros_array=zeros_array,matlab_path=matlab_path)      
+                 zeros_array=zeros_array,matlab_path=matlab_path,
+                 output_directory=output_directory)      
     finish_normthresh_time = proc.time() - start_normthresh_time    
     cat("thresholding complete. Time elapsed: ", finish_normthresh_time[3],"s")
   }
@@ -298,7 +305,8 @@ ConstructMarginalModel <- function(external_df,
                    surf_template_file=surf_template_file,
                    output_prefix='observed_clusters_',measnames=measnames,
                    surf_command=surf_command,wb_command=wb_command,
-                   zeros_array=zeros_array,matlab_path=matlab_path)
+                   zeros_array=zeros_array,matlab_path=matlab_path,
+                   output_directory=output_directory)
     }
       if (sigtype == 'enrichment'){
         for (curr_meas in 1:nmeas){
@@ -423,7 +431,8 @@ ConstructMarginalModel <- function(external_df,
                  surf_template_file=surf_template_file,
                  output_prefix='pval_map_',measnames=measnames,
                  surf_command=surf_command,wb_command=wb_command,
-                 zeros_array=zeros_array,matlab_path=matlab_path,sigtype=sigtype)
+                 zeros_array=zeros_array,matlab_path=matlab_path,sigtype=sigtype,
+                 output_directory=output_directory)
     setwd(curr_directory)
     all_time = proc.time() - initial_time
     cat("ConstructMarginalModel complete. Time elapsed", all_time[3],"s")

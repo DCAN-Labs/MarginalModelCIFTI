@@ -14,7 +14,8 @@ SaveBWASfile(
   wb_command = NULL,
   zeros_array = NULL,
   matlab_path = NULL,
-  sigtype = "NULL"
+  sigtype = "NULL",
+  output_directory = "./"
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ SaveBWASfile(
 \item{matlab_path}{A full path/filename to the matlab runtime compiler engine, must be V91}
 
 \item{sigtype}{A character string denoting whether the map is volumetric ('volume'), surface-based ('surface'), a pconn ('pconn'), or a NIFTI connectivity matrix ('niiconn').}
+
+\item{output_directory}{A character string denoting the full path to the output directory for the file}
 }
 \description{
 This function saves stat map data for ConstructMarginalModel. Created to further modularlize the R package.
