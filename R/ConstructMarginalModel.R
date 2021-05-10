@@ -68,7 +68,8 @@ ConstructMarginalModel <- function(external_df,
                                    subsetfile = NULL,
                                    permutation_directory = NULL,
                                    analysismode = 'full',
-                                   checkorder = TRUE){
+                                   checkorder = TRUE,
+                                   roisubset=NULL){
   initial_time = proc.time()
   require(purrr)
   require(cifti)
@@ -82,6 +83,7 @@ ConstructMarginalModel <- function(external_df,
   require(stringr)
   require(R.matlab)
   require(SparseM)
+  require(raveio)
   cifti_firstsub= NULL
   zeros_array = NULL
   curr_directory = getwd()
@@ -165,7 +167,7 @@ ConstructMarginalModel <- function(external_df,
   }
   print("loading imaging data")
   start_load_time = proc.time()
-  CiftiInputs <- LoadBrainMetrics(ciftilist,structtype)
+  CiftiInputs <- LoadBrainMetrics(ciftilist,structtype,roisubset)
   Nelm = CiftiInputs$Nelm
   cifti_alldata =  CiftiInputs$cifti_alldata
   cifti_scalarmap = CiftiInputs$cifti_scalarmap

@@ -36,7 +36,8 @@ ConstructMarginalModel(
   subsetfile = NULL,
   permutation_directory = NULL,
   analysismode = "full",
-  checkorder = TRUE
+  checkorder = TRUE,
+  roisubset = NULL
 )
 }
 \arguments{

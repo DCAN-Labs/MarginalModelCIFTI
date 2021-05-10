@@ -17,7 +17,9 @@ Imports:
 	stringr,
 	purrr,
 	R.matlab,
-	SparseM
+	SparseM,
+	raveio,
+	hdf5r
 License: modified BSD 3.0
 Encoding: UTF-8
 LazyData: true

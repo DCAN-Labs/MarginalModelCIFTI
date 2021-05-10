@@ -4,12 +4,14 @@
 \alias{LoadBrainMetrics}
 \title{LoadBrainMetrics -- A Modularlized function for MarginalModelCifti to load MR data}
 \usage{
-LoadBrainMetrics(ciftilist, structtype)
+LoadBrainMetrics(ciftilist, structtype, roisubset = NULL)
 }
 \arguments{
 \item{ciftilist}{A data frame comprising a list of path/filenames to load}
 
 \item{structtype}{A character string denoting whether the map is volumetric ('volume'), surface-based ('surface'), a pconn ('pconn'), or a NIFTI connectivity matrix ('niiconn').}
+
+\item{roisubset}{A numeric array comprising a subset of the datapoints to use, in development and works with dairc-2d-matfile only}
 }
 \description{
 This function loads the imaging data for ConstructMarginalModel. Created to further modularlize the R package.

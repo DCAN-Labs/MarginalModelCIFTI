@@ -35,6 +35,7 @@ SaveBWASfile <- function(BWAS_statmap,
   require(oro.nifti)
   require(R.matlab)
   require(SparseM)
+  require(raveio)
   if (structtype == 'surface'){
     for (curr_map in 1:dim(BWAS_statmap)[1]){
       WriteVectorToGifti(metric_data = BWAS_statmap[curr_map,],
@@ -96,6 +97,22 @@ SaveBWASfile <- function(BWAS_statmap,
   if (structtype == 'dataframe'){
     for (curr_map in 1:dim(BWAS_statmap)[1]){
       write.csv(x = curr_map,file = paste(output_directory,'/',output_prefix,measnames[curr_map],sep="",header=FALSE))
+    }
+  }
+  if (structtype == 'dairc-2d-matfile'){
+    if (sigtype == 'enrichment') {
+      for (curr_map in 1:length(BWAS_statmap)) {
+        write.table(array(unlist(BWAS_statmap[curr_map]),dim=c(sqrt(length(unlist(BWAS_statmap[curr_map]))),sqrt(length(unlist(BWAS_statmap[curr_map]))))),file = paste(output_directory,'/',output_prefix,measnames[curr_map],sep=""))
+      }
+    } else
+    {
+      for (curr_map in 1:dim(BWAS_statmap)[1]){
+        temp_mat <- Matrix2Vector(pconn_data = zeros_array,
+                                  pconn_vector = BWAS_statmap[curr_map,],
+                                  direction = "to_matrix")
+        writeMat(paste(output_directory,'/',output_prefix,measnames[curr_map],".mat",sep=""),
+                 stat_map=temp_mat)
+      }
     }
   }
 }

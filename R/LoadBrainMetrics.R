@@ -3,13 +3,14 @@
 #' This function loads the imaging data for ConstructMarginalModel. Created to further modularlize the R package.
 #' @param ciftilist A data frame comprising a list of path/filenames to load
 #' @param structtype A character string denoting whether the map is volumetric ('volume'), surface-based ('surface'), a pconn ('pconn'), or a NIFTI connectivity matrix ('niiconn').
+#' @param roisubset A numeric array comprising a subset of the datapoints to use, in development and works with dairc-2d-matfile only 
 #' @keywords wild bootstrap sandwich estimator marginal model CIFTI scalar
 #' @export
 #' @examples
 #' cifti_data <- LoadBrainMetrics(cifitilist,structtype)
 #'
    
-LoadBrainMetrics <- function(ciftilist,structtype) {
+LoadBrainMetrics <- function(ciftilist,structtype,roisubset=NULL) {
   CiftiInputs = list()
   require(cifti)
   require(gifti)
@@ -18,6 +19,7 @@ LoadBrainMetrics <- function(ciftilist,structtype) {
   require(oro.nifti)
   require(R.matlab)
   require(SparseM)
+  require(raveio)
   if (structtype == 'volume'){
     zeros_array = NULL
     cifti_file <- PrepVolMetric(as.character(ciftilist$file[1]))
@@ -150,6 +152,31 @@ LoadBrainMetrics <- function(ciftilist,structtype) {
       }
     }
     cifti_scalarmap <- as.data.frame(cifti_alldata)
+  }
+  if (structtype == 'dairc-2d-matfile'){
+    cifti_firstsub <- read_mat(as.character(ciftilist$file[1]))$R
+    if (is.null(roisubset)){
+     roisubset = 1:dim(blah)[1]
+    }
+    cifti_firstsub <- read_mat(as.character(ciftilist$file[1]))$R[roisubset,roisubset]
+    cifti_alldata <- array(data = NA, dim = c(length(ciftilist$file),dim(cifti_firstsub)[1]*(dim(cifti_firstsub)[1]-1)/2))
+    zeros_array <- array(data=0,dim = c(dim(cifti_firstsub)[1],dim(cifti_firstsub)[2]))
+    count = 1
+    for (filename in ciftilist$file) { 
+      if (norm_internal_data == TRUE){
+        cifti_temp <- read_mat(as.character(filename))$Z[roisubset,roisubset]
+      }
+      if (norm_internal_data == FALSE){
+        cifti_temp <- read_mat(as.character(filename))$R[roisubset,roisubset]
+      }
+      cifti_alldata[count,] <- Matrix2Vector(cifti_temp)
+      count = count + 1
+    }
+    Nelm <- dim(cifti_alldata)[2]
+    cifti_dim <- Nelm
+    cifti_nonans <- sapply(1:dim(cifti_alldata)[1],function(x){ sum(is.na(cifti_alldata[x,]))==0})
+    cifti_alldata <- cifti_alldata[cifti_nonans,]
+    cifti_scalarmap <- as.data.frame(cifti_alldata) 
   }
   CiftiInputs$Nelm = Nelm
   CiftiInputs$cifti_alldata = cifti_alldata
