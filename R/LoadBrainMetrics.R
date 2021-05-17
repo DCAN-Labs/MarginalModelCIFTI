@@ -46,6 +46,7 @@ LoadBrainMetrics <- function(ciftilist,structtype,roisubset=NULL) {
   if (structtype == 'surface') {
     zeros_array = NULL
     cifti_alldata <- t(data.frame((lapply(as.character(ciftilist$file),PrepSurfMetric))))
+    cifit_firstsub <- cifti_alldata[1,]
     Nelm <- dim(cifti_alldata)[2]
     cifti_dim <- Nelm
     cifti_nonans <- sapply(1:dim(cifti_alldata)[1],function(x){ sum(is.na(cifti_alldata[x,]))==0})
