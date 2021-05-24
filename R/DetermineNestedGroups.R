@@ -12,6 +12,8 @@ DetermineNestedGroups <- function(wave) {
   nvars <- dim(wave)[2]
   if (is.null(nvars)){
     final_wave <- as.numeric(factor(wave))
+  } else if (nvars == 1) {
+    final_wave <- as.numeric(factor(wave[,1]))
   } else if (nvars == 2) {
     final_wave <- as.numeric(factor(paste0(wave[,1],wave[,2])))
   } else if (nvars > 2){
