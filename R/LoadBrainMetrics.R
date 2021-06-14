@@ -23,6 +23,7 @@ LoadBrainMetrics <- function(ciftilist,structtype,roisubset=NULL) {
   if (structtype == 'volume'){
     zeros_array = NULL
     cifti_file <- PrepVolMetric(as.character(ciftilist$file[1]))
+    cifti_firstsub <- cifti_file
     cifti_dim <- dim(cifti_file)
     cifti_alldata <- array(dim = c(length(ciftilist$file),cifti_dim[1]*cifti_dim[2]*cifti_dim[3]))
     count = 1
