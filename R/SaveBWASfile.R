@@ -50,7 +50,7 @@ SaveBWASfile <- function(BWAS_statmap,
         nifti_file <- PrepVolMetric(as.character(surf_template_file))
         cifti_dim <- dim(nifti_file)
         temp_map <- RevertVolume(BWAS_statmap[curr_map,],cifti_dim)
-        cifti_file[] <- temp_map
+        nifti_file[] <- temp_map
         writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/',output_prefix,measnames[curr_map],sep=""))
       }
     }
