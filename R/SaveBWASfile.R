@@ -51,7 +51,7 @@ SaveBWASfile <- function(BWAS_statmap,
         cifti_dim <- dim(nifti_file)
         temp_map <- RevertVolume(BWAS_statmap[curr_map,],cifti_dim)
         nifti_file[] <- temp_map
-        writeNIfTI(nim = cifti_file,filename = paste(output_directory,'/',output_prefix,measnames[curr_map],sep=""))
+        writeNIfTI(nim = nifti_file,filename = paste(output_directory,'/',output_prefix,measnames[curr_map],sep=""))
       }
     }
   if (structtype == 'pconn'){
