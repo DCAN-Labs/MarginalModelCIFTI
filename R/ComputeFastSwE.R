@@ -13,61 +13,57 @@
 #' @examples
 #' T_map <- ComputeFastSwE(X=external_df,nested=nested,Nelm=Nelm,resid_map=resid_map,npredictors=npredictors,beta_map=beta_map,adjustment=adjustment)
 ComputeFastSwE <- function(X,nested,Nelm,resid_map,npredictors,beta_map,adjustment){
-  if (is.null(adjustment)) {
-    hat_adjust <- NULL
-  } else
-  {
-    hat_adjust <- diag(X%*%((t(X)%*%X)^-1)%*%t(X))
+  # Compute the pseudoinverse of the design matrix.
+  # In the future we may compute this with pracma's pinv(),
+  # or it may be passed into the function directly.
+  Xpinv = solve(X%*%t(X))%*%t(X);
+
+  # Apply small sample size adjustment to residuals.
+  if (is.null(adjustment)){
+  } else if (adjustment == "HC2"){
+    resid_map <- resid_map/sqrt(1 - diag(Xpinv))
+  } else if (adjustment == "HC3"){
+    resid_map <- resid_map/(1 - diag(Xpinv))
   }
-  # Computation of SwE standard errors
-  start_time <- Sys.time()
+
+  # Allocate memory into which we will store the computed standard errors.
   SE.swe = matrix(0,nrow=npredictors,ncol=Nelm)
-  Bread  = solve(t(X)%*%X)
-  BreadX = Bread%*%t(X)
-  S      = array(0,dim=c(npredictors,npredictors,Nelm))
-  S0     = array(0,dim=c(1,npredictors,Nelm))
+
+  # Iterate over voxels/vertices using the apply() function.
   if (is.null(nested)){
-    if (is.null(adjustment)){
-    } else if (adjustment == "HC2"){
-      resid_map <- resid_map/sqrt(1 - hat_adjust)
-    } else if (adjustment == "HC3"){
-      resid_map <- resid_map/(1 - hat_adjust)
-    }
-    Ns = dim(X)[1]
-    e = array(resid_map,c(1,Ns,Nelm))
-    if (npredictors==1){
-      S0[] = apply(e,3,function(x)x%*%(BreadX))
-    } else
-    {
-      S0[] = apply(e,3,function(x)x%*%t(BreadX))
-    }
-    # Full `Bread*Meat*Bread' contribution
-    S = S + array(apply(S0,3,function(x)t(x)%*%x),dim=c(npredictors,npredictors,Nelm))
+    # Assume error terms are independently but *not* identically distributed.
+    # That is, the errors are heteroskedastic without any blocking/nesting.
+
+    # This is optimized code.  Recall Xpinv is the Moore-Penrose
+    # pseudoinverse of the design matrix X.  What we actually want to compute
+    # separately for each voxel/vertice's residuals (as a column vector e) is:
+    # SE = sqrt( diag( Xpinv %*% diag(e^2) %*% t(Xpinv) ) )
+    # The first optimization is to replace raising to a power with:
+    # SE = sqrt( diag( Xpinv %*% diag(e*e) %*% t(Xpinv) ) )
+    # Since the middle is a diagonal matrix, rather than actually allocate
+    # the entire matrix in memory, we can broadcast the diagonal using the sweep
+    # function and then do simple element-wise multiplication:
+    # SE = sqrt( diag( sweep(Xpinv,MARGIN=2,e*e,`*`) %*% t(Xpinv) ) )
+    # Next, we realize that we only care about the diagonal of the product of
+    # the Xpinv %*% t(Xpinv) (the element-wise multiplication by sweep() is
+    # factored out).  We can compute this by taking the sum of each row of
+    # Xpinv * t(Xpinv).  Putting it all together:
+    SE.swe = apply(resid_map,2,function(e)sqrt(rowSums(sweep(Xpinv,MARGIN=2,e*e,`*`)*Xpinv))
   } else
   {
+    # Iterate over each nesting and compute partitions of diag(e^2).
+    block_resid_map = array(0, dim=c(dim(X)[1], Nelm))
     Nnest <- max(nested)
     for (s in 1:Nnest) {
       I=(s==nested)
       Ns=sum(I)
-      if (is.null(adjustment)){
-        e = array(resid_map[I,],c(1,Ns,Nelm))
-      } else if (adjustment == "HC2"){
-        e = array(resid_map[I,]/sqrt(1 - hat_adjust),c(1,Ns,Nelm))
-      } else if (adjustment == "HC3"){
-        e = array(resid_map[I,]/(1 - hat_adjust),c(1,Ns,Nelm))
-      }
-      # half of Meat times t(BreadX)
-      if (npredictors==1){
-        S0[] = apply(e,3,function(x)x%*%(BreadX[,I]))
-      }else 
-      {
-        S0[] = apply(e,3,function(x)x%*%t(BreadX[,I]))
-      }
-      # Full `Bread*Meat*Bread' contribution for nest s
-      S = S + array(apply(S0,3,function(x)t(x)%*%x),dim=c(npredictors,npredictors,Nelm))
+      block_resid_map[I,] = apply(resid_map[I,],2,function(e)array(mean(e.^2), dim=c(Ns)))
     }
+
+    # Same computation as non-nested case using blocked residual map.
+    SE.swe = apply(block_resid_map,2,function(e)sqrt(rowSums(sweep(Xpinv,MARGIN=2,e*e,`*`)*Xpinv))
   }
-  SE.swe[]=sqrt(apply(S,3,diag))
+  # T-values = estimated parameters divided by their standard errors
   T.swe = beta_map/SE.swe
   return(T.swe)
 }
