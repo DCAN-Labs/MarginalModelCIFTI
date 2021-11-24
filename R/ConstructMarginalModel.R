@@ -69,7 +69,9 @@ ConstructMarginalModel <- function(external_df,
                                    permutation_directory = NULL,
                                    analysismode = 'full',
                                    checkorder = TRUE,
-                                   roisubset=NULL){
+                                   roisubset=NULL,
+                                   boot_method='manly'
+                                   variables_of_interest=NULL){
   initial_time = proc.time()
   require(purrr)
   require(cifti)
@@ -192,6 +194,9 @@ ConstructMarginalModel <- function(external_df,
   predictors <- attr(terms(notation),"term.labels")
   measnames <- c("intercept",predictors)    
   if (fastSwE == TRUE){
+    if (boot_method == 'freedman_lane') {
+      external_df_covariatesonly <- ParseDf(external_df = external_df, notation = notation,norm_data=norm_external_data,pulled_vars=variables_of_interest)
+    }
     external_df <- ParseDf(external_df = external_df,notation = notation,norm_data=norm_external_data)
     nmeas <- dim(external_df)[2]
   }
@@ -223,7 +228,15 @@ ConstructMarginalModel <- function(external_df,
     cat("thresholding complete. Time elapsed: ", finish_normthresh_time[3],"s")
   } else
   {
-    cifti_map <- lm.fit(external_df,cifti_alldata)
+    if (boot_method == 'manly') {
+      cifti_map <- lm.fit(external_df,cifti_alldata)
+    }
+    if (boot_method == 'freedman_lane') {
+      cifti_map_covariatesonly <- lm.fit(external_df_covariatesonly,cifti_alldata)
+      resid_map_covariatesonly_temp <- cifti_map_covariatesonly$residuals
+      cifti_alldata_residualized <- cifti_alldata - resid_map_covariatesonly_temp # may not work as is, need to test
+      cifti_map <- lm.fit(external_df,cifti_alldata_residualized)
+    }
     beta_map <- cifti_map$coefficients
     SaveBWASfile(BWAS_statmap=beta_map,structtype=structtype,
                  surf_template_file=surf_template_file,

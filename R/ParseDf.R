@@ -8,9 +8,12 @@
 #' @export
 #' @examples
 #' X <- ParseDf(external_df,notation)
-ParseDf <- function(external_df,notation,norm_data){
+ParseDf <- function(external_df,notation,norm_data,pulled_vars=NULL){
   ncases <- dim(external_df)[1]
   predictors <- attr(terms(notation),"term.labels")
+  if (is.null(~pulled_vars)){
+    predictors <- setdiff(predictors,pulled_vars)
+  }
   if (norm_data==TRUE){
     X <- cbind(rep(1,ncases),(external_df[[predictors[1]]] - mean(external_df[[predictors[1]]]))/sd(external_df[[predictors[1]]]))
     if (length(predictors) > 1){
