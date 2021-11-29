@@ -177,7 +177,7 @@ ConstructMarginalModel <- function(external_df,
   cifti_dim = CiftiInputs$cifti_dim
   cifti_splitfile <- strsplit(as.character(ciftilist$file[1]),split='/')
   surf_template_filename <- cifti_splitfile[[1]][length(cifti_splitfile[[1]])]
-  surf_template_file=paste(output_directory,'/',surf_template_filename)
+  surf_template_file=paste(output_directory,'/',surf_template_filename,sep = '')
   surf_template_copycommand = paste('cp ',as.character(ciftilist$file[1]), ' ', surf_template_filename)
   system(surf_template_copycommand)
   print("parse non-imaging data")
