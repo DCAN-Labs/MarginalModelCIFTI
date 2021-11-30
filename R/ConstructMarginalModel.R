@@ -175,7 +175,11 @@ ConstructMarginalModel <- function(external_df,
   zeros_array = CiftiInputs$zeros_array
   cifti_nonans = CiftiInputs$nonans
   cifti_dim = CiftiInputs$cifti_dim
-  surf_template_file=as.character(ciftilist$file[1])
+  cifti_splitfile <- strsplit(as.character(ciftilist$file[1]),split='/')
+  surf_template_filename <- cifti_splitfile[[1]][length(cifti_splitfile[[1]])]
+  surf_template_file=paste(output_directory,'/',surf_template_filename,sep = '')
+  surf_template_copycommand = paste('cp ',as.character(ciftilist$file[1]), ' ', surf_template_filename)
+  system(surf_template_copycommand)
   print("parse non-imaging data")
   external_df <- external_df[cifti_nonans,]
   df_nan <- FilterDFNA(external_df = external_df,notation = notation)
@@ -439,6 +443,8 @@ ConstructMarginalModel <- function(external_df,
     all_time = proc.time() - initial_time
     cat("ConstructMarginalModel complete. Time elapsed", all_time[3],"s")
     return(all_maps)
+    surf_template_rmcommand = paste('rm ', surf_template_filename)
+    system(surf_template_rmcommand)
   }
 }
 
