@@ -48,7 +48,7 @@ ComputeFastSwE <- function(X,nested,Nelm,resid_map,npredictors,beta_map,adjustme
     # the Xpinv %*% t(Xpinv) (the element-wise multiplication by sweep() is
     # factored out).  We can compute this by taking the sum of each row of
     # Xpinv * t(Xpinv).  Putting it all together:
-    SE.swe = apply(resid_map,2,function(e)sqrt(rowSums(sweep(Xpinv,MARGIN=2,e*e,`*`)*Xpinv))
+    SE.swe = apply(resid_map,2,function(e)sqrt(rowSums(sweep(Xpinv,MARGIN=2,e*e,`*`)*Xpinv)))
   } else
   {
     # Iterate over each nesting and compute partitions of diag(e^2).
@@ -61,7 +61,7 @@ ComputeFastSwE <- function(X,nested,Nelm,resid_map,npredictors,beta_map,adjustme
     }
 
     # Same computation as non-nested case using blocked residual map.
-    SE.swe = apply(block_resid_map,2,function(e)sqrt(rowSums(sweep(Xpinv,MARGIN=2,e*e,`*`)*Xpinv))
+    SE.swe = apply(block_resid_map,2,function(e)sqrt(rowSums(sweep(Xpinv,MARGIN=2,e*e,`*`)*Xpinv)))
   }
   # T-values = estimated parameters divided by their standard errors
   T.swe = beta_map/SE.swe
